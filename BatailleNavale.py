@@ -2,6 +2,7 @@
 # IMPORTATIONS
 # =======================================================================================================
 
+import tkinter as tk
 
 # =======================================================================================================
 # CLASS
@@ -38,6 +39,22 @@ class BatailleNavale:
             joueur2.pseudo: joueur2.jeu
         }
 
+    def est_touche(plateau: list, coord: tuple):
+        """
+        Méthode qui renvoit si il y a un bateau sur la case
+        :param coord: tuple
+               plateau: list
+        :return:
+        """
+        case = plateau[coord[0]][coord[1]]
+        if case == '_':
+            return False
+        elif case == "x":
+            return True   
+
+    def est_coule(case):
+        pass
+
     @staticmethod
     def afficher_plateau(plateau: list) -> None:
         """
@@ -56,3 +73,10 @@ class BatailleNavale:
 
 bataille_navale = BatailleNavale()
 bataille_navale.afficher_plateau(bataille_navale.joueurs['Val'])
+fenetre = tk.Tk()
+fenetre.title("Bataille Navale")
+zone_dessin = tk.Canvas(width="1100", height="600", bg="white")
+zone_dessin.pack()
+board_image = tk.PhotoImage(file="grille-bataille-navale.gif")
+fond_board = tk.zone_dessin.create_image(0, 0, image=board_image)
+fenetre.mainloop()
