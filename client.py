@@ -11,7 +11,7 @@ import socket
 
 class Client:
     """
-    Class server
+    Classe relative au client
     """
 
     def __init__(self, nom_machine, host, port):
