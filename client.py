@@ -48,7 +48,7 @@ class Client:
 
         return message_converti
 
-    def get_message(self) -> str:
+    def recevoir_message(self) -> str:
         """
         Récupérer un message
         :return message_serveur_decode : str
