@@ -1,5 +1,5 @@
 # =====================================================================================================================
-# IMPORT
+# IMPORTATIONS
 # =====================================================================================================================
 
 
@@ -14,72 +14,65 @@ class Client:
     Class server
     """
 
-    def __init__(self, machine_name, host, port):
-        self.machine_name = machine_name
+    def __init__(self, nom_machine, host, port):
+        self.machine_name = nom_machine
         self.HOST = host
         self.PORT = port
-        self.CONNECTION_WITH_SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.CONNEXION_AVEC_SERVEUR = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_info = None
         self.__repr__()
 
-    def connect_device(self):
+    def connecter_appareil(self):
         """
-        Method that connects the client to the server
+        Méthode qui permet de connecter le client au serveur
         """
-        self.CONNECTION_WITH_SERVER.connect((self.HOST, self.PORT))
+        self.CONNEXION_AVEC_SERVEUR.connect((self.HOST, self.PORT))
 
-    def encode(self, message):
+    def encoder_message(self, message):
         """
         Methods that encodes a message
         :return: message encoded
         """
         return message.encode()
 
-    def send_message(self, message: str):
+    def envoyer_message(self, message: str) -> str:
         """
-        Methods that allows to send a message
-        :param message: message
-        :return mess: converted message, str
+        Envoyer un message
+        :param message : message
+        :return message_converti : str
         """
-        mess = "\n" + self.machine_name + " : " + message
+        message_converti = "\n" + self.machine_name + " : " + message
 
-        mess_to_send = self.encode(mess)
-        self.CONNECTION_WITH_SERVER.send(mess_to_send)
+        message_a_envoyer = self.encoder_message(message_converti)
+        self.CONNEXION_AVEC_SERVEUR.send(message_a_envoyer)
 
-        return mess
+        return message_converti
 
-    def get_message(self):
+    def get_message(self) -> str:
         """
-        method that gets a message
-        :return client_message_decoded: message decoded, str
+        Récupérer un message
+        :return message_serveur_decode : str
         """
-        client_message = self.CONNECTION_WITH_SERVER.recv(1024)
-        client_message_decoded = client_message.decode()
+        message_serveur = self.CONNEXION_AVEC_SERVEUR.recv(1024)
+        message_serveur_decode = message_serveur.decode()
 
-        if "quit" in client_message_decoded.lower():
-            self.end()
-        return client_message_decoded
+        if "quit" in message_serveur_decode.lower():
+            self.fin_connexion()
+        return message_serveur_decode
 
-    def end(self):
+    def fin_connexion(self) -> None:
         """
-        Method that ends the chat
+        Finir la connexion
+        :return : None
         """
-        self.CONNECTION_WITH_SERVER.close()
+        self.CONNEXION_AVEC_SERVEUR.close()
 
     def __repr__(self):
         """
-        Method that displays infos
+        Afficher les informations relatives au client
+        :return : None
         """
         infos = ["Affichage de l'IP machine ", socket.gethostbyname_ex(socket.gethostname())]
 
-        for elt in infos:
-            print(elt)
-
-
-# =====================================================================================================================
-# MAIN
-# =====================================================================================================================
-
-
-# server = Client("User_client", "...", 1030)
-# server.connect_device()
+        for element in infos:
+            print(element)
