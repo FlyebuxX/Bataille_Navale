@@ -2,6 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
+
 from tkinter import *
 from client import Client
 # =======================================================================================================
@@ -13,12 +14,12 @@ class Joueur:
     """
     Joueur de la bataille navale
     """
-    def __init__(self, pseudo: str):
+    def __init__(self, pseudo: str, deck=[]):
         self.pseudo = pseudo
-        self.jeu = []
-        self.client = Client('Machine_Name', 'HOST', 'PORT')
+        self.jeu = deck
+        self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
 
-    def creer_plateau(self) -> None:
+    def initialiser_plateau(self) -> None:
         """
         Méthode qui crée un plateau de jeu
         :return : None
@@ -31,7 +32,7 @@ class Joueur:
         Connexion du client au serveur
         :return : None
         """
-        self.client.connect_device()
+        self.connexion_client.connecter_appareil()
 
 
 class BatailleNavaleClient:
@@ -40,11 +41,36 @@ class BatailleNavaleClient:
     """
     def __init__(self, joueur1: str):
         self.joueur_client = Joueur(joueur1)
-        self.joueur_client.creer_plateau()
+        self.joueur_client.initialiser_plateau()
 
         self.set = {
             self.joueur_client.pseudo: self.joueur_client.jeu,
         }
+
+        # recevoir le pseudo de l'ennemi
+        ennemi = self.joueur_client.connexion_client.recevoir_message()
+        self.ennemi = Joueur(ennemi)
+        self.set[ennemi] = self.ennemi.jeu
+
+    def convertisseur_dico_vers_str(self, jeu_liste) -> str:
+        """
+        Méthode qui convertit un jeu en chaîne de caractère
+        :param jeu_liste : list
+        :return dico_vers_str : conversion de la liste en string
+        """
+        dico_vers_str = ''
+        for ligne in jeu_liste:
+            for element in ligne:
+                dico_vers_str += str(element)
+
+        return dico_vers_str
+
+    def envoyer_jeu(self) -> None:
+        """
+        Méthode qui permet d'envoyer le jeu du client, de la forme d'un dictionnaire vers une chaîne de caractères
+        """
+        jeu_str = self.convertisseur_dico_vers_str(self.joueur_client.jeu)
+        self.joueur_client.connexion_client.envoyer_message(jeu_str)
 
     def afficher_plateau(self, plateau: list) -> None:
         """
@@ -55,17 +81,24 @@ class BatailleNavaleClient:
         for ligne in plateau:
             print(ligne)
 
+    def detection_clic(self, event) -> tuple:
+        """
+        Méthode qui renvoie les coordonnées du clic de souris détecté sur l'écran
+        """
+        return event.x, event.y
+
 
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
 
 
-bataille_navale = BatailleNavaleClient(input('Nom du joueur (client) : '))
-fenetre = Tk()
-fenetre.title("Bataille Navale")
+bataille_navale_client = BatailleNavaleClient(input('Nom du joueur (client) : '))
+tk = Tk()
+tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
-board_image = PhotoImage(file="images\jeu.gif")
+board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
-fenetre.mainloop()
+zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
+tk.mainloop()
