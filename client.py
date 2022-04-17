@@ -30,8 +30,8 @@ class Client:
 
     def encoder_message(self, message):
         """
-        Methods that encodes a message
-        :return: message encoded
+        Méthode qui encode un massage
+        :return message encoded :
         """
         return message.encode()
 
