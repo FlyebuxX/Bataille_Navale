@@ -3,7 +3,7 @@
 # =======================================================================================================
 
 
-from serveur import Server
+from serveur import Serveur
 # =======================================================================================================
 # CLASS
 # =======================================================================================================
@@ -16,9 +16,9 @@ class Joueur:
     def __init__(self, pseudo: str):
         self.pseudo = pseudo
         self.jeu = []
-        self.serveur = Server('Machine_Name', 'HOST', 'PORT', 2)
+        self.serveur = Serveur('Machine_Name', 'HOST', 'PORT', 2)
 
-    def creer_plateau(self) -> None:
+    def initialiser_plateau(self) -> None:
         """
         Méthode qui crée un plateau de jeu
         :return : None
@@ -31,9 +31,9 @@ class Joueur:
         Connexion du serveur avec le client
         :return : None
         """
-        self.serveur.bind_server()  # paramétrage connexion
-        self.serveur.listen_connections()  # écoute d'une connexion entrante
-        self.serveur.accept_connections()
+        self.serveur.configuration_serveur()  # paramétrage connexion
+        self.serveur.recevoir_connexions()  # écoute d'une connexion entrante
+        self.serveur.accepter_connexion()
 
 
 class BatailleNavale:
@@ -43,7 +43,7 @@ class BatailleNavale:
 
     def __init__(self, joueur2: str):
         self.joueur_serveur = Joueur(joueur2)
-        self.joueur_serveur.creer_plateau()
+        self.joueur_serveur.initialiser_plateau()
 
         self.set = {
             self.joueur_serveur.pseudo: self.joueur_serveur.jeu,
