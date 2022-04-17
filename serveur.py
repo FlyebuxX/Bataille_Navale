@@ -1,5 +1,5 @@
 # =====================================================================================================================
-# IMPORT
+# IMPORTATIONS
 # =====================================================================================================================
 
 
@@ -9,80 +9,80 @@ import socket
 # =====================================================================================================================
 
 
-class Server:
+class Serveur:
     """
-    Class server
+    Class relative au serveur
     """
 
-    def __init__(self, machine_name, host, port, max_con):
-        self.machine_name = machine_name
+    def __init__(self, nom_machine, host, port, max_connexions):
+        self.machine_name = nom_machine
         self.HOST = host
         self.PORT = port
-        self.MAX_CONNECTIONS = max_con
-        self.MAIN_CONNECTION = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.connection_with_client = None
-        self.client_info = None
+        self.MAX_CONNECTIONS = max_connexions
+        self.CONNEXION_PRINCIPALE = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.connexion_avec_client = None
+        self.informations_client = None
         self.__repr__()
 
-    def bind_server(self):
+    def configuration_serveur(self):
         """
-        Methods that configures the server
+        Configuration du serveur
         """
-        self.MAIN_CONNECTION.bind((self.HOST, self.PORT))
+        self.CONNEXION_PRINCIPALE.bind((self.HOST, self.PORT))
 
-    def listen_connections(self):
+    def recevoir_connexions(self):
         """
-        Methods that listens connections
+        Méthode qui écoute une connexion entrante
         """
-        self.MAIN_CONNECTION.listen(self.MAX_CONNECTIONS)
+        self.CONNEXION_PRINCIPALE.listen(self.MAX_CONNECTIONS)
 
-    def accept_connections(self):
+    def accepter_connexion(self):
         """
-        Methods that accepts a new connection / gets a server-side chat channel
+        Méthode qui accepte une nouvelle connexion et engage un tchat avec un client
         """
-        (connection_with_client, client_info) = self.MAIN_CONNECTION.accept()
+        (connexion_avec_client, informations_client) = self.CONNEXION_PRINCIPALE.accept()
 
-        self.connection_with_client = connection_with_client
-        self.client_info = client_info
+        self.connexion_avec_client = connexion_avec_client
+        self.informations_client = informations_client
 
-    def encode(self, message):
+    def encoder_message(self, message):
         """
-        Methods that encodes a message
-        :return: message encoded
+        Méthode qui encode un massage
+        :return message encoded :
         """
         return message.encode()
 
-    def send_message(self, message: str):
+    def envoyer_message(self, message: str) -> str:
         """
-        Methods that allows to send a message
-        :param message: message
-        :return mess: converted message, str
+        Envoyer un message
+        :param message : message
+        :return message_converti : str
         """
-        mess = "\n" + self.machine_name + " : " + message
+        message_converti = "\n" + self.machine_name + " : " + message
 
-        mess_to_send = self.encode(mess)
-        self.connection_with_client.send(mess_to_send)
+        message_a_envoyer = self.encoder_message(message_converti)
+        self.connexion_avec_client.send(message_a_envoyer)
 
-        return mess
+        return message_converti
 
-    def get_message(self):
+    def recevoir_message(self) -> str:
         """
-        method that gets a message
-        :return client_message_decoded: message decoded, str
+        Récupérer un message
+        :return message_serveur_decode : str
         """
-        client_message = self.connection_with_client.recv(1024)
-        client_message_decoded = client_message.decode()
+        message_serveur = self.connexion_avec_client.recv(1024)
+        message_serveur_decode = message_serveur.decode()
 
-        if "quit" in client_message_decoded.lower():
-            self.end()
-        return client_message_decoded
+        if "quit" in message_serveur_decode.lower():
+            self.fin_connexion()
+        return message_serveur_decode
 
-    def end(self):
+    def fin_connexion(self) -> None:
         """
-        Method that ends the chat
+        Finir la connexion
+        :return : None
         """
-        self.MAIN_CONNECTION.close()
-        self.connection_with_client.close()
+        self.connexion_avec_client.close()
 
     def __repr__(self):
         """
@@ -92,15 +92,3 @@ class Server:
 
         for elt in infos:
             print(elt)
-
-
-# =====================================================================================================================
-# MAIN
-# =====================================================================================================================
-
-
-#server = Server("User_server", "...", 1030, 1)
-
-#server.bind_server()  # binding connections
-#server.listen_connections()  # listening connections
-#server.accept_connections()  # getting a server-side chat channel
