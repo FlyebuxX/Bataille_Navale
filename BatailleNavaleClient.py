@@ -47,7 +47,7 @@ class BatailleNavaleClient:
         }
 
         # recevoir le pseudo de l'ennemi
-        ennemi = self.joueur_client.connexion_client.get_message()
+        ennemi = self.joueur_client.connexion_client.recevoir_message()
         self.ennemi = Joueur(ennemi)
         self.set[ennemi] = self.ennemi.jeu
 
