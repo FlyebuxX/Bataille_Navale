@@ -21,7 +21,7 @@ class Joueur:
     def creer_plateau(self) -> None:
         """
         Méthode qui crée un plateau de jeu
-        :return: None
+        :return : None
         """
         jeu_joueur = [[i if i > 0 else '' for i in range(11)]] + [[chr(i)] + ['_'] * 9 for i in range(65, 75)]
         self.jeu = jeu_joueur
@@ -29,7 +29,7 @@ class Joueur:
     def connexion(self):
         """
         Connexion du serveur avec le client
-        :return: None
+        :return : None
         """
         self.serveur.bind_server()  # paramétrage connexion
         self.serveur.listen_connections()  # écoute d'une connexion entrante
