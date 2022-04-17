@@ -2,7 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-
+from tkinter import *
 from client import Client
 # =======================================================================================================
 # CLASS
@@ -62,3 +62,10 @@ class BatailleNavaleClient:
 
 
 bataille_navale = BatailleNavaleClient(input('Nom du joueur (client) : '))
+fenetre = Tk()
+fenetre.title("Bataille Navale")
+zone_dessin = Canvas(width="1100", height="600", bg="white")
+zone_dessin.pack()
+board_image = PhotoImage(file="images\jeu.gif")
+fond_board = zone_dessin.create_image(550, 300, image=board_image)
+fenetre.mainloop()
