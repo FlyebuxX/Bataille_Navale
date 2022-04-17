@@ -18,7 +18,7 @@ class Joueur:
         self.jeu = deck
         self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
 
-    def creer_plateau(self) -> None:
+    def initialiser_plateau(self) -> None:
         """
         Méthode qui crée un plateau de jeu
         :return : None
@@ -40,7 +40,7 @@ class BatailleNavaleClient:
     """
     def __init__(self, joueur1: str):
         self.joueur_client = Joueur(joueur1)
-        self.joueur_client.creer_plateau()
+        self.joueur_client.initialiser_plateau()
 
         self.set = {
             self.joueur_client.pseudo: self.joueur_client.jeu,
@@ -93,11 +93,11 @@ class BatailleNavaleClient:
 
 
 bataille_navale_client = BatailleNavaleClient(input('Nom du joueur (client) : '))
-fenetre = Tk()
-fenetre.title("Bataille Navale")
+tk = Tk()
+tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
-fenetre.mainloop()
+tk.mainloop()
