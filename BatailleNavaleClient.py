@@ -48,9 +48,12 @@ class BatailleNavaleClient:
         }
 
         # recevoir le pseudo de l'ennemi
-        ennemi = self.joueur_client.connexion_client.recevoir_message()
-        self.ennemi = Joueur(ennemi)
-        self.set[ennemi] = self.ennemi.jeu
+
+        # ennemi = self.joueur_client.connexion_client.recevoir_message()
+        # self.ennemi = Joueur(ennemi)
+        # self.set[ennemi] = self.ennemi.jeu
+
+        self.images = []
 
     def convertisseur_dico_vers_str(self, jeu_liste) -> str:
         """
@@ -81,11 +84,45 @@ class BatailleNavaleClient:
         for ligne in plateau:
             print(ligne)
 
+    def validation_clic(self, coords: tuple) -> bool:
+        """
+        Méthode qui renvoie si le clic est valide
+        :param coords : tuple, coordonnées du clic
+        :return : bool
+        """
+        x = coords[0]
+        y = coords[1]
+        if 723 <= x <= 1062 and 163 < y < 520:
+            return True
+        return False
+
+    def poser_image(self, x: int, y: int, type_tir: str) -> None:
+        """
+        Méthode qui crée une nouvelle image sur la zone de dessin
+        :param x : int
+        :param y : int
+        :param type_tir : str, touche, eau, coule
+        :return : None
+        """
+        types = {'touche': 'images/touche.gif', 'coule': 'images/coule.gif', 'eau': 'eau.gif'}
+        img = PhotoImage(file=types[type_tir])
+        zone_dessin.create_image(x, y, image=img)
+        self.images.append(img)
+
     def detection_clic(self, event) -> tuple:
         """
         Méthode qui renvoie les coordonnées du clic de souris détecté sur l'écran
+        :param event : événement
+        :return event.x : int
+        :return event.y : int
+        :return clic_valide : bool
         """
-        return event.x, event.y
+        clic_valide = self.validation_clic((event.x, event.y))
+        if clic_valide:
+            # if touche ....  elif coule .... else eau ....
+            self.poser_image(event.x, event.y, 'touche')
+
+        return event.x, event.y, clic_valide
 
 
 # =======================================================================================================
@@ -100,5 +137,6 @@ zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
+
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
 tk.mainloop()
