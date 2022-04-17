@@ -31,7 +31,7 @@ class Joueur:
         Connexion du client au serveur
         :return : None
         """
-        self.connexion_client.connect_device()
+        self.connexion_client.connecter_appareil()
 
 
 class BatailleNavaleClient:
@@ -54,7 +54,7 @@ class BatailleNavaleClient:
     def convertisseur_dico_vers_str(self, jeu_liste) -> str:
         """
         Méthode qui convertit un jeu en chaîne de caractère
-        :param jeu_dico : list
+        :param jeu_liste : list
         :return dico_vers_str : conversion de la liste en string
         """
         dico_vers_str = ''
@@ -69,7 +69,7 @@ class BatailleNavaleClient:
         Méthode qui permet d'envoyer le jeu du client, de la forme d'un dictionnaire vers une chaîne de caractères
         """
         jeu_str = self.convertisseur_dico_vers_str(self.joueur_client.jeu)
-        self.joueur_client.connexion_client.send_message(jeu_str)
+        self.joueur_client.connexion_client.envoyer_message(jeu_str)
 
     def afficher_plateau(self, plateau: list) -> None:
         """
