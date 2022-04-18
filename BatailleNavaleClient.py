@@ -2,10 +2,10 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-
 from tkinter import *
 from client import Client
 from math import sqrt
+
 # =======================================================================================================
 # CLASS
 # =======================================================================================================
@@ -94,9 +94,12 @@ class BatailleNavaleClient:
         :param coords : tuple, coordonnées du clic
         :return : bool
         """
+        global phase
         x = coords[0]
         y = coords[1]
-        if 723 <= x <= 1062 and 163 < y < 520:
+        if phase == "tour_joueur1" and 723 <= x <= 1062 and 163 < y < 520:
+            return True
+        elif phase == "pose_bateau" and 93 <= x <= 431 and 163 <= y <= 518:
             return True
         return False
 
@@ -108,7 +111,7 @@ class BatailleNavaleClient:
         :param type_tir : str, touche, eau, coule
         :return : None
         """
-        types = {'touche': 'images/touche.gif', 'coule': 'images/coule.gif', 'eau': 'eau.gif'}
+        types = {'touche': 'images/touche.gif', 'coule': 'images/coule.gif', 'eau': 'images/eau.gif', 'bateau' :'images/bateau.gif'}
         img = PhotoImage(file=types[type_tir])
         zone_dessin.create_image(x, y, image=img)
         self.images.append(img)
@@ -121,12 +124,24 @@ class BatailleNavaleClient:
         :return event.y : int
         :return clic_valide : bool
         """
+        # prend la grille selon la phase du jeu
+        global phase
+        if phase == "pose_bateau" or phase == "tour_joueur2":
+            jeu = self.joueur_client.jeu
+            img = 'bateau'
+        elif phase == "tour_joueur1":
+            jeu = self.ennemi.jeu
+
         clic_valide = self.validation_clic((event.x, event.y))
         if clic_valide:
             # if touche ....  elif coule .... else eau ....
-            event.x, event.y = self.centrer_image(event.x, event.y)
-            self.chercher_case(event.x, event.y)
-            self.poser_image(event.x, event.y, 'coule')
+            if phase == "tour_joueur1" or phase == "tour_joueur2":
+                img = 'coule'
+
+            # prend les coordonnées du milieu de la case cliquée
+            case = self.chercher_case(event.x, event.y)
+            event.x, event.y = jeu[case][0], jeu[case][1]
+            self.poser_image(event.x, event.y, img)
 
         return event.x, event.y, clic_valide
 
@@ -137,14 +152,14 @@ class BatailleNavaleClient:
         :param y : int
         :return case : case du plateau où il y a eu un clic
         """
-        # récupération du jeu sous forme de list
-        cases = [(cle, valeur) for cle, valeur in self.ennemi.jeu.items()]
+        # prend la grille selon la phase du jeu
+        global phase
+        if phase == "pose_bateau" or phase == "tour_joueur2":
+            jeu = self.joueur_client.jeu
+        elif phase == "tour_joueur1":
+            jeu = self.ennemi.jeu
 
-        # définir le milieu de chaque case
-        milieu = lambda x0, y0, x1, y1: ((x1 + x0) // 2, (y1 + y0) // 2)
-        distances_milieux = {
-            elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
-        }
+        distances_milieux = jeu
 
         # trouver de quel milieu et donc de quelle case le clic se rapproche
         dist_courante, case = 1000, ''  # on fixe des valeurs par défaut
@@ -155,47 +170,35 @@ class BatailleNavaleClient:
                 case = cle
         return case
 
-    def centrer_image(self, x: int, y: int) -> tuple:
-        """
-        Méthode qui renvoie les coordonnées du milieu de la case cliquée
-        :param x : int
-        :param y : int
-        :return x : int
-        :return y : int
-        """
-        x_valid = [739, 773, 807, 842, 875, 909, 944, 978, 1012, 1045]
-        y_valid = [181, 217, 253, 288, 324, 360, 395, 430, 467, 503]
-        x_diff, y_diff = 20, 20
-        i = -1
-        while x_diff >= 17:
-            i += 1
-            x_diff = abs(x_valid[i] - x)
-        x = x_valid[i]
-        i = -1
-        while y_diff >= 17:
-            i += 1
-            y_diff = abs(y_valid[i] - y)
-        y = y_valid[i]
-        return x, y
-
     def coordonnees_cases(self) -> None:
         """
-        Méthode qui associe chaque case du jeu à des coordonnées, coin supérieur gauche et coin inférieur droit
+        Méthode qui associe chaque case du jeu aux coordonnées de leur milieu
         """
+        # prend les coordonnées des points inférieurs droits et supérieurs gauches des cases
+        # grille du joueur local
+        cases = [
+            (chr(i) + str(k),
+                ((round(94 + 36 * (k - 1) - k * 2), round(163 + 34 * (i - 65) + abs(65 - i) * 1.6)),  # coords sup
+                (round(94 + 36 * k - k * 2.3), round(163 + 34 * (i - 64) + abs(65 - i) * 1.6)) # coords inf
+                )) for i in range(65, 75) for k in range(1, 11)
+        ]
+        # définir le milieu de chaque case
+        milieu = lambda x0, y0, x1, y1: ((x1 + x0) // 2, (y1 + y0) // 2)
         coords_joueur_courant = {
-            chr(i) + str(k): [
-                (round(94 + 36 * (k - 1) - k * 2), round(163 + 34 * (i - 65) + abs(65 - i) * 1.6)),  # coords sup
-                (round(94 + 36 * k - k * 2.3), round(163 + 34 * (i - 64) + abs(65 - i) * 1.6))  # coords inf
-            ]
-            for i in range(65, 75) for k in range(1, 11)
+            elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
         }
 
-        coords_ennemi = {
-            chr(i) + str(k): [
+        # grille du joueur adverse
+        cases = [
+            (chr(i) + str(k), (
                 (round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
                 (round(722 + 36 * k - k * 1.8), round(163 + 34 * (i - 64) + abs(65 - i) * 1.8))  # coords inf
-            ]
-            for i in range(65, 75) for k in range(1, 11)
+                )) for i in range(65, 75) for k in range(1, 11)
+        ]
+        
+        # définir le milieu de chaque case
+        coords_ennemi = {
+            elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
         }
 
         self.joueur_client.jeu, self.ennemi.jeu = coords_joueur_courant, coords_ennemi
@@ -217,6 +220,7 @@ fond_board = zone_dessin.create_image(550, 300, image=board_image)
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
 
 # Jeu
+phase = "pose_bateau"
 bataille_navale_client.coordonnees_cases()
 
 tk.mainloop()
