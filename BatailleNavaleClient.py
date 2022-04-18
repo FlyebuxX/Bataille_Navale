@@ -155,15 +155,23 @@ class BatailleNavaleClient:
         """
         Méthode qui associe chaque case du jeu à des coordonnées, coin supérieur gauche et coin inférieur droit
         """
-        coords = {chr(i) + str(k): [
-            (round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
-            (round(722 + 36 * k - k * 1.8), round(163 + 34 * (i - 64) + abs(65 - i) * 1.8))  # coords inf
-        ]
-             for i in range(65, 75) for k in range(1, 11)
+        coords_joueur_courant = {
+            chr(i) + str(k): [
+                (round(94 + 36 * (k - 1) - k * 2), round(163 + 34 * (i - 65) + abs(65 - i) * 1.6)),  # coords sup
+                (round(94 + 36 * k - k * 2.3), round(163 + 34 * (i - 64) + abs(65 - i) * 1.6))  # coords inf
+            ]
+            for i in range(65, 75) for k in range(1, 11)
         }
 
-        self.ennemi.jeu = coords
+        coords_ennemi = {
+            chr(i) + str(k): [
+                (round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
+                (round(722 + 36 * k - k * 1.8), round(163 + 34 * (i - 64) + abs(65 - i) * 1.8))  # coords inf
+            ]
+            for i in range(65, 75) for k in range(1, 11)
+        }
 
+        self.joueur_client.jeu, self.ennemi.jeu = coords_joueur_courant, coords_ennemi
 
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
@@ -171,12 +179,17 @@ class BatailleNavaleClient:
 
 
 bataille_navale_client = BatailleNavaleClient(input('Nom du joueur (client) : '))
+
+# GUI
 tk = Tk()
 tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
-bataille_navale_client.coordonnees_cases()
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
+
+# Jeu
+bataille_navale_client.coordonnees_cases()
+
 tk.mainloop()
