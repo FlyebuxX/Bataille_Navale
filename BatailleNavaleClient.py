@@ -49,9 +49,12 @@ class BatailleNavaleClient:
 
         # recevoir le pseudo de l'ennemi
 
-        # ennemi = self.joueur_client.connexion_client.recevoir_message()
-        # self.ennemi = Joueur(ennemi)
-        # self.set[ennemi] = self.ennemi.jeu
+        # pseudo_ennemi = self.joueur_client.connexion_client.recevoir_message()
+        # deck_ennemi = self.joueur_client.connexion_client.recevoir_message()
+        # self.ennemi = Joueur(pseudo_ennemi, deck_ennemi)
+        # self.set[pseudo_ennemi] = self.ennemi.jeu
+        self.ennemi = Joueur('Jack')
+        self.set['Jack'] = self.ennemi.jeu
 
         self.images = []
 
@@ -121,7 +124,7 @@ class BatailleNavaleClient:
         if clic_valide:
             # if touche ....  elif coule .... else eau ....
             event.x, event.y = self.centrer_image(event.x, event.y)
-            self.poser_image(event.x, event.y, 'touche')
+            self.poser_image(event.x, event.y, 'coule')
 
         return event.x, event.y, clic_valide
 
@@ -148,6 +151,19 @@ class BatailleNavaleClient:
         y = y_valid[i]
         return x, y
 
+    def coordonnees_cases(self) -> None:
+        """
+        Méthode qui associe chaque case du jeu à des coordonnées, coin supérieur gauche et coin inférieur droit
+        """
+        coords = {chr(i) + str(k): [
+            (round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
+            (round(722 + 36 * k - k * 1.8), round(163 + 34 * (i - 64) + abs(65 - i) * 1.8))  # coords inf
+        ]
+             for i in range(65, 75) for k in range(1, 11)
+        }
+
+        self.ennemi.jeu = coords
+
 
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
@@ -161,6 +177,6 @@ zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
-
+bataille_navale_client.coordonnees_cases()
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
 tk.mainloop()
