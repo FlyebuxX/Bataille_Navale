@@ -125,14 +125,17 @@ class BatailleNavaleClient:
 
         return event.x, event.y, clic_valide
 
-    def centrer_image(self, x, y):
+    def centrer_image(self, x: int, y: int) -> tuple:
         """
-        Méthode qui renvoit les coordonnées du milieu de la case cliquée
+        Méthode qui renvoie les coordonnées du milieu de la case cliquée
+        :param x : int
+        :param y : int
+        :return x : int
+        :return y : int
         """
         x_valid = [739, 773, 807, 842, 875, 909, 944, 978, 1012, 1045]
         y_valid = [181, 217, 253, 288, 324, 360, 395, 430, 467, 503]
-        x_diff = 20
-        y_diff = 20
+        x_diff, y_diff = 20, 20
         i = -1
         while x_diff >= 17:
             i += 1
@@ -144,7 +147,6 @@ class BatailleNavaleClient:
             y_diff = abs(y_valid[i] - y)
         y = y_valid[i]
         return x, y
-
 
 
 # =======================================================================================================
