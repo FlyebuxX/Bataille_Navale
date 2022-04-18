@@ -120,9 +120,31 @@ class BatailleNavaleClient:
         clic_valide = self.validation_clic((event.x, event.y))
         if clic_valide:
             # if touche ....  elif coule .... else eau ....
+            event.x, event.y = self.centrer_image(event.x, event.y)
             self.poser_image(event.x, event.y, 'touche')
 
         return event.x, event.y, clic_valide
+
+    def centrer_image(self, x, y):
+        """
+        Méthode qui renvoit les coordonnées du milieu de la case cliquée
+        """
+        x_valid = [739, 773, 807, 842, 875, 909, 944, 978, 1012, 1045]
+        y_valid = [181, 217, 253, 288, 324, 360, 395, 430, 467, 503]
+        x_diff = 20
+        y_diff = 20
+        i = -1
+        while x_diff >= 17:
+            i += 1
+            x_diff = abs(x_valid[i] - x)
+        x = x_valid[i]
+        i = -1
+        while y_diff >= 17:
+            i += 1
+            y_diff = abs(y_valid[i] - y)
+        y = y_valid[i]
+        return x, y
+
 
 
 # =======================================================================================================
