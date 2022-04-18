@@ -5,6 +5,7 @@
 
 from tkinter import *
 from client import Client
+from math import sqrt
 # =======================================================================================================
 # CLASS
 # =======================================================================================================
@@ -124,9 +125,36 @@ class BatailleNavaleClient:
         if clic_valide:
             # if touche ....  elif coule .... else eau ....
             event.x, event.y = self.centrer_image(event.x, event.y)
+            self.chercher_case(event.x, event.y)
             self.poser_image(event.x, event.y, 'coule')
 
         return event.x, event.y, clic_valide
+
+    def chercher_case(self, x: int, y: int) -> str:
+        """
+        Méthode qui permet de faire correspondre le clic d'un joueur à une case du plateau
+        :param x : int
+        :param y : int
+        :return case : case du plateau où il y a eu un clic
+        """
+        # récupération du jeu sous forme de list
+        cases = [(cle, valeur) for cle, valeur in self.ennemi.jeu.items()]
+
+        # définir le milieu de chaque case
+        milieu  = lambda x0, y0, x1, y1: ((x1 + x0) // 2, (y1 + y0) // 2)
+        distances_milieux = {
+            elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
+        }
+        print(distances_milieux)
+
+        # trouver de quel milieu et donc de quelle case le clic se rapproche
+        dist_courante, case = 1000, ''  # on fixe des valeurs par défaut
+        for cle, valeur in distances_milieux.items():
+            distance_avec_point = sqrt((valeur[0] - x) ** 2 + (valeur[1] - y) ** 2)
+            if distance_avec_point < dist_courante:
+                dist_courante = distance_avec_point
+                case = cle
+        return case
 
     def centrer_image(self, x: int, y: int) -> tuple:
         """
