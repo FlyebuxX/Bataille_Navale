@@ -284,15 +284,15 @@ class BatailleNavaleClient:
         :param longueur_bateau : longueur du bateau attendue
         """
         if case_dep[0] == case_fin[0]:  # même lettre, pose horizontale
-            if int(case_fin[1]) - int(case_dep[1]) + 1 < 0:
+            if int(case_fin[1:]) - int(case_dep[1:]) + 1 < 0:
                 case_fin, case_dep = case_dep, case_fin
-            if int(case_fin[1]) - int(case_dep[1]) + 1 == longueur_bateau:
+            if int(case_fin[1:]) - int(case_dep[1:]) + 1 == longueur_bateau:
                 self.poser_bateau(case_dep, case_fin)
             else:
                 # Label()......
                 self.pop_up('Attention', 'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
-        elif case_dep[1] == case_fin[1]:  # même numéro, pose verticale
+        elif case_dep[1:] == case_fin[1:]:  # même numéro, pose verticale
             if ord(case_fin[0]) - ord(case_dep[0]) + 1 < 0:
                 case_fin, case_dep = case_dep, case_fin
             if ord(case_fin[0]) - ord(case_dep[0]) + 1 == longueur_bateau:
@@ -328,7 +328,7 @@ class BatailleNavaleClient:
         # on vérifie que l'emplacement du bateau est valide
 
         for case in cases_bateaux:
-            if case in self.joueur_client.cases_interdites and valide == True:
+            if case in self.joueur_client.cases_interdites and valide:
                 valide = False
                 self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
 
@@ -337,7 +337,7 @@ class BatailleNavaleClient:
             self.longueurs_bateaux.pop(0)
             # on pose les images du bateau
             for case in cases_a_poser:
-                x, y = case[0], case[1]
+                x, y = case[0], case[1:]
                 self.poser_image(x, y, 'bateau')
 
             # on met à jour la liste des cases interdites
