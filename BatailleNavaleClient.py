@@ -143,10 +143,9 @@ class BatailleNavaleClient:
         clic_valide = self.validation_clic((event.x, event.y))
         if clic_valide:
             if phase == "tour_joueur1" or phase == "tour_joueur2":
-
-            # prend les coordonnées du milieu de la case cliquée
-            case = self.chercher_case(event.x, event.y)
-            event.x, event.y = jeu[case][0], jeu[case][1]
+                # prend les coordonnées du milieu de la case cliquée
+                case = self.chercher_case(event.x, event.y)
+                event.x, event.y = jeu[case][0], jeu[case][1]
 
             if len(self.longueurs_bateaux) > 0:
                 self.deux_derniers_clics.append((event.x, event.y))
