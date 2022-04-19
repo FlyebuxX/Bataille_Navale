@@ -284,6 +284,8 @@ class BatailleNavaleClient:
         :param longueur_bateau : longueur du bateau attendue
         """
         if case_dep[0] == case_fin[0]:  # même lettre, pose horizontale
+            if int(case_fin[1]) - int(case_dep[1]) + 1 < 0:
+                case_fin, case_dep = case_dep, case_fin
             if int(case_fin[1]) - int(case_dep[1]) + 1 == longueur_bateau:
                 self.poser_bateau(case_dep, case_fin)
             else:
@@ -291,6 +293,8 @@ class BatailleNavaleClient:
                 self.pop_up('Attention', 'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
         elif case_dep[1] == case_fin[1]:  # même numéro, pose verticale
+            if ord(case_fin[0]) - ord(case_dep[0]) + 1 < 0:
+                case_fin, case_dep = case_dep, case_fin
             if ord(case_fin[0]) - ord(case_dep[0]) + 1 == longueur_bateau:
                 self.poser_bateau(case_dep, case_fin)
             else:
