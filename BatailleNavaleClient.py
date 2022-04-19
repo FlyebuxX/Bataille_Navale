@@ -2,7 +2,6 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-from cProfile import label
 from tkinter import *
 from client import Client
 from math import sqrt
@@ -95,26 +94,26 @@ class BatailleNavaleClient:
         for ligne in plateau:
             print(ligne)
 
-
-    def pop_up(self, titre: str, texte_pu: str) -> None:
+    def pop_up(self, titre: str, texte_pop_up: str) -> None:
         """
         Méthode qui fait une fenêtre pop up
-        :param titre: str, titre de la fenêtre
-               texte_pu: str, texte à afficher
+        :param titre : str, titre de la fenêtre
+        :param texte_pop_up : str, texte à afficher
+        :return : None
         """
-        pu = Toplevel() # création de la fenêtre pop up
+        var_pop_up = Toplevel()  # création de la fenêtre pop up
 
         # centre la fenêtre
-        y = int(tk.winfo_screenheight()/2) - 35
-        x = int(tk.winfo_screenwidth()/2) - 250
-        pu.geometry('500x70+' + str(x) + '+' + str(y))
+        y = int(tk.winfo_screenheight() / 2) - 35
+        x = int(tk.winfo_screenwidth() / 2) - 250
+        var_pop_up.geometry('500x70+' + str(x) + '+' + str(y))
 
-        pu.title(titre)
-        Label(pu, text=texte_pu).pack()
-        Button(pu, text="Ok", command=pu.destroy).pack()
-        pu.transient(tk)
-        pu.grab_set()
-        tk.wait_window(pu)
+        var_pop_up.title(titre)
+        Label(var_pop_up, text=texte_pop_up).pack()
+        Button(var_pop_up, text="Ok", command=var_pop_up.destroy).pack()
+        var_pop_up.transient(tk)
+        var_pop_up.grab_set()
+        tk.wait_window(var_pop_up)
 
     def validation_clic(self, coords: tuple) -> bool:
         """
@@ -152,17 +151,17 @@ class BatailleNavaleClient:
 
     def tir(self, case: str) -> str:
         """
-        Méthode qui renvoie le résultat du tir : à l'eau/touché/coulé
-        :param case: str, case du tir
-        :return: str, le résultat du tir
+        Méthode qui renvoie le résultat du tir : à l'eau / touché / coulé
+        :param case : str, case du tir
+        :return : str, le résultat du tir
         """
         tir = 'eau'
-        for bateau in range(len(self.joueur_client.bateaux)) :
+        for bateau in range(len(self.joueur_client.bateaux)):
             # si on touche un bateau
             if case in self.joueur_client.bateaux[bateau]:
                 # si le bateau est coulé
                 for coord in range(len(self.joueur_client.bateaux[bateau])):
-                    if  self.joueur_client.bateaux[bateau][coord] == case:
+                    if self.joueur_client.bateaux[bateau][coord] == case:
                         case_touchee = coord
                 self.joueur_client.bateaux[bateau].pop(case_touchee)
                 if len(self.joueur_client.bateaux[bateau]) == 0:
@@ -170,8 +169,6 @@ class BatailleNavaleClient:
                 else:
                     tir = 'touche'
         return tir
-
-
 
     def detection_clic(self, event) -> tuple:
         """
@@ -201,11 +198,11 @@ class BatailleNavaleClient:
                     self.joueur_client.cases_jouees.append(case)
 
             elif self.phase == "pose_bateau":
-                if len(self.longueurs_bateaux) > 0: # si il y a encore des bateaux à poser
+                if len(self.longueurs_bateaux) > 0:  # s'il y a encore des bateaux à poser
                     case = self.chercher_case(event.x, event.y)
-                    if case in self.joueur_client.cases_interdites: # si la case est valide
+                    if case in self.joueur_client.cases_interdites:  # si la case est valide
                         self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
-                        if len(self.deux_derniers_clics) > 0: # pour réinitialiser s'il s'agit du 2e clic
+                        if len(self.deux_derniers_clics) > 0:  # pour réinitialiser s'il s'agit du 2e clic
                             self.deux_derniers_clics = []
                             self.images.pop()
                     else:
@@ -213,17 +210,18 @@ class BatailleNavaleClient:
 
                         if len(self.deux_derniers_clics) >= 2:  # il y a une coordonnée de départ, une de fin
                             self.images.pop()
-                            case_dep = self.chercher_case(self.deux_derniers_clics[0][0], self.deux_derniers_clics[0][1])
-                            case_fin = self.chercher_case(self.deux_derniers_clics[1][0], self.deux_derniers_clics[1][1])
+                            case_dep = self.chercher_case(self.deux_derniers_clics[0][0],
+                                                          self.deux_derniers_clics[0][1])
+                            case_fin = self.chercher_case(self.deux_derniers_clics[1][0],
+                                                          self.deux_derniers_clics[1][1])
                             self.verifier_position_bateau(case_dep, case_fin, self.longueurs_bateaux[0])
                             self.deux_derniers_clics = []
 
-                        else: # pose l'image de l'ancre pour savoir où on a cliqué la 1e fois
+                        else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1e fois
                             event.x, event.y = jeu[case][0], jeu[case][1]
                             self.poser_image(event.x, event.y, 'ancre')
-                        
                     
-                if len(self.longueurs_bateaux) == 0: # s'il n'y a plus de bateaux à mettre
+                if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_joueur1'
 
         return event.x, event.y, clic_valide
@@ -287,7 +285,7 @@ class BatailleNavaleClient:
 
     def init_cases_adjacentes(self) -> None:
         """
-        Méthode qui fais un dictionnaire des cases adjacentes de la grille
+        Méthode qui crée un dictionnaire des cases adjacentes de la grille
         """
         for i in range(65, 75): 
             for j in range(1, 11):
@@ -319,7 +317,8 @@ class BatailleNavaleClient:
                 self.poser_bateau(case_dep, case_fin)
             else:
                 # Label()......
-                self.pop_up('Attention', 'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
+                self.pop_up('Attention',
+                            'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
         elif case_dep[1:] == case_fin[1:]:  # même numéro, pose verticale
             if ord(case_fin[0]) - ord(case_dep[0]) < 0:
@@ -328,7 +327,8 @@ class BatailleNavaleClient:
                 self.poser_bateau(case_dep, case_fin)
             else:
                 # Label()......
-                self.pop_up('Attention', 'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
+                self.pop_up('Attention',
+                            'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
     def poser_bateau(self, case_dep: str, case_fin: str) -> None:
         """
@@ -361,7 +361,6 @@ class BatailleNavaleClient:
                 valide = False
                 self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
 
-
         if valide:
             self.longueurs_bateaux.pop(0)
             # on pose les images du bateau
@@ -378,7 +377,6 @@ class BatailleNavaleClient:
             self.joueur_client.bateaux.append([case for case in cases_bateaux])
 
 
-
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
@@ -391,10 +389,10 @@ tk = Tk()
 tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
-# centre la fenêtre
-y = int(tk.winfo_screenheight()/2) - 350
-x = int(tk.winfo_screenwidth()/2) - 550
-tk.geometry('1100x600+' + str(x) + '+' + str(y))
+
+# Centrer la fenêtre
+nouveau_x, nouveau_y = int(tk.winfo_screenwidth()/2) - 550, int(tk.winfo_screenheight()/2) - 350
+tk.geometry('1100x600+' + str(nouveau_x) + '+' + str(nouveau_y))
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
