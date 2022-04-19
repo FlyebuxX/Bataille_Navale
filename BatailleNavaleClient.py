@@ -333,7 +333,7 @@ class BatailleNavaleClient:
                 self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
 
 
-        if valide == True:
+        if valide:
             self.longueurs_bateaux.pop(0)
             # on pose les images du bateau
             for case in cases_a_poser:
@@ -362,6 +362,10 @@ tk = Tk()
 tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
+# centre la fenêtre
+y = int(tk.winfo_screenheight()/2) - 300
+x = int(tk.winfo_screenwidth()/2) - 550
+tk.geometry('1100x600+' + str(x) + '+' + str(y))
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
