@@ -194,7 +194,10 @@ class BatailleNavaleClient:
                 case = self.chercher_case(event.x, event.y)
                 event.x, event.y = jeu[case][0], jeu[case][1]
                 if case not in self.joueur_client.cases_jouees:
-                    self.poser_image(event.x, event.y, self.tir(case))
+                    img = self.tir(case)
+                    self.poser_image(event.x, event.y, img)
+                    event.x, event.y = self.joueur_client.jeu[case][0], self.joueur_client.jeu[case][1]
+                    self.poser_image(event.x, event.y, img)
                     self.joueur_client.cases_jouees.append(case)
 
             elif self.phase == "pose_bateau":
