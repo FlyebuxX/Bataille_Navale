@@ -158,7 +158,9 @@ class BatailleNavaleClient:
         """
         tir = 'eau'
         for bateau in range(len(self.joueur_client.bateaux)) :
+            # si on touche un bateau
             if case in self.joueur_client.bateaux[bateau]:
+                # si le bateau est coulé
                 for coord in range(len(self.joueur_client.bateaux[bateau])):
                     if  self.joueur_client.bateaux[bateau][coord] == case:
                         case_touchee = coord
@@ -167,7 +169,6 @@ class BatailleNavaleClient:
                     tir = 'coule'
                 else:
                     tir = 'touche'
-        print(self.joueur_client.bateaux, case)
         return tir
 
 
