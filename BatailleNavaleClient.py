@@ -2,6 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
+from cProfile import label
 from tkinter import *
 from client import Client
 from math import sqrt
@@ -93,6 +94,27 @@ class BatailleNavaleClient:
         for ligne in plateau:
             print(ligne)
 
+
+    def pop_up(self, titre: str, texte_pu: str) -> None:
+        """
+        Méthode qui fait une fenêtre pop up
+        :param titre: str, titre de la fenêtre
+               texte_pu: str, texte à afficher
+        """
+        pu = Toplevel() # création de la fenêtre pop up
+
+        # centre la fenêtre
+        y = int(tk.winfo_screenheight()/2) - 35
+        x = int(tk.winfo_screenwidth()/2) - 250
+        pu.geometry('500x70+' + str(x) + '+' + str(y))
+
+        pu.title(titre)
+        Label(pu, text=texte_pu).pack()
+        Button(pu, text="Ok", command=pu.destroy).pack()
+        pu.transient(tk)
+        pu.grab_set()
+        tk.wait_window(pu)
+
     def validation_clic(self, coords: tuple) -> bool:
         """
         Méthode qui renvoie si le clic est valide
@@ -153,7 +175,7 @@ class BatailleNavaleClient:
                 if len(self.longueurs_bateaux) > 0: # si il y a encore des bateaux à poser
                     case = self.chercher_case(event.x, event.y)
                     if case in self.joueur_client.cases_interdites: # si la case est valide
-                        print("Vous ne pouvez pas placer de bateau ici")
+                        self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
                         if len(self.deux_derniers_clics) > 0: # pour réinitialiser s'il s'agit du 2e clic
                             self.deux_derniers_clics = []
                             self.images.pop()
@@ -266,14 +288,14 @@ class BatailleNavaleClient:
                 self.poser_bateau(case_dep, case_fin)
             else:
                 # Label()......
-                print('Emplacement invalide: vous devez poser un bateau de taille', longueur_bateau)
+                self.pop_up('Attention', 'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
         elif case_dep[1] == case_fin[1]:  # même numéro, pose verticale
             if ord(case_fin[0]) - ord(case_dep[0]) + 1 == longueur_bateau:
                 self.poser_bateau(case_dep, case_fin)
             else:
                 # Label()......
-                print('Emplacement invalide: vous devez poser un bateau de taille', longueur_bateau)
+                self.pop_up('Attention', 'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
     def poser_bateau(self, case_dep: str, case_fin: str) -> None:
         """
@@ -304,7 +326,7 @@ class BatailleNavaleClient:
         for case in cases_bateaux:
             if case in self.joueur_client.cases_interdites and valide == True:
                 valide = False
-                print("Vous ne pouvez pas placer de bateau ici")
+                self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
 
 
         if valide == True:
