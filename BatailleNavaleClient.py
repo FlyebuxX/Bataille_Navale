@@ -18,6 +18,7 @@ class Joueur:
     def __init__(self, pseudo: str, deck=[]):
         self.pseudo = pseudo
         self.jeu = deck
+        self.bateaux = []
         self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
 
     def initialiser_plateau(self) -> None:
@@ -58,6 +59,8 @@ class BatailleNavaleClient:
         self.set['Jack'] = self.ennemi.jeu
 
         self.images = []
+        self.deux_derniers_clics = []
+        self.longueurs_bateaux = [5, 4, 3, 3, 2]
 
     def convertisseur_dico_vers_str(self, jeu_liste) -> str:
         """
@@ -111,7 +114,13 @@ class BatailleNavaleClient:
         :param type_tir : str, touche, eau, coule
         :return : None
         """
-        types = {'touche': 'images/touche.gif', 'coule': 'images/coule.gif', 'eau': 'images/eau.gif', 'bateau' :'images/bateau.gif'}
+        types = {
+            'bateau': 'images/bateau.gif',
+            'touche': 'images/touche.gif',
+            'coule': 'images/coule.gif',
+            'eau': 'images/eau.gif'
+        }
+
         img = PhotoImage(file=types[type_tir])
         zone_dessin.create_image(x, y, image=img)
         self.images.append(img)
@@ -128,20 +137,27 @@ class BatailleNavaleClient:
         global phase
         if phase == "pose_bateau" or phase == "tour_joueur2":
             jeu = self.joueur_client.jeu
-            img = 'bateau'
         elif phase == "tour_joueur1":
             jeu = self.ennemi.jeu
 
         clic_valide = self.validation_clic((event.x, event.y))
         if clic_valide:
-            # if touche ....  elif coule .... else eau ....
             if phase == "tour_joueur1" or phase == "tour_joueur2":
-                img = 'coule'
 
             # prend les coordonnées du milieu de la case cliquée
             case = self.chercher_case(event.x, event.y)
             event.x, event.y = jeu[case][0], jeu[case][1]
-            self.poser_image(event.x, event.y, img)
+
+            if len(self.longueurs_bateaux) > 0:
+                self.deux_derniers_clics.append((event.x, event.y))
+
+                if len(self.deux_derniers_clics) >= 2:  # il y a une coordonnée de départ, une de fin
+                    case_dep = self.chercher_case(self.deux_derniers_clics[0][0], self.deux_derniers_clics[0][1])
+                    case_fin = self.chercher_case(self.deux_derniers_clics[1][0], self.deux_derniers_clics[1][1])
+                    self.verifier_position_bateau(case_dep, case_fin, self.longueurs_bateaux[0])
+                    self.deux_derniers_clics = []
+            else:
+                phase = 'tour_joueur1'
 
         return event.x, event.y, clic_valide
 
@@ -176,12 +192,12 @@ class BatailleNavaleClient:
         """
         # prend les coordonnées des points inférieurs droits et supérieurs gauches des cases
         # grille du joueur local
-        cases = [
-            (chr(i) + str(k),
-                ((round(94 + 36 * (k - 1) - k * 2), round(163 + 34 * (i - 65) + abs(65 - i) * 1.6)),  # coords sup
-                (round(94 + 36 * k - k * 2.3), round(163 + 34 * (i - 64) + abs(65 - i) * 1.6)) # coords inf
-                )) for i in range(65, 75) for k in range(1, 11)
-        ]
+        cases = [(chr(i) + str(k),
+                 ((round(94 + 36 * (k - 1) - k * 2), round(163 + 34 * (i - 65) + abs(65 - i) * 1.6)),   # coords sup
+                 (round(94 + 36 * k - k * 2.3), round(163 + 34 * (i - 64) + abs(65 - i) * 1.6))))  # coords inf
+
+                 for i in range(65, 75) for k in range(1, 11)
+                 ]
         # définir le milieu de chaque case
         milieu = lambda x0, y0, x1, y1: ((x1 + x0) // 2, (y1 + y0) // 2)
         coords_joueur_courant = {
@@ -189,12 +205,12 @@ class BatailleNavaleClient:
         }
 
         # grille du joueur adverse
-        cases = [
-            (chr(i) + str(k), (
-                (round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
-                (round(722 + 36 * k - k * 1.8), round(163 + 34 * (i - 64) + abs(65 - i) * 1.8))  # coords inf
-                )) for i in range(65, 75) for k in range(1, 11)
-        ]
+        cases = [(chr(i) + str(k),
+                 ((round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
+                 (round(722 + 36 * k - k * 1.8), round(163 + 34 * (i - 64) + abs(65 - i) * 1.8))))  # coords inf
+
+                 for i in range(65, 75) for k in range(1, 11)
+                 ]
         
         # définir le milieu de chaque case
         coords_ennemi = {
@@ -202,6 +218,64 @@ class BatailleNavaleClient:
         }
 
         self.joueur_client.jeu, self.ennemi.jeu = coords_joueur_courant, coords_ennemi
+
+    # -------------------------------------------------------------------------------------------------- #
+    # --- POSE DES BATEAUX                                                                               #
+    # -------------------------------------------------------------------------------------------------- #
+
+    def verifier_position_bateau(self, case_dep, case_fin, longueur_bateau):
+        """
+        Méthode qui vérifie si la position des bateaux renseignée sont valides
+        :param case_dep : str, début de la position du bateau à poser
+        :param case_fin : str, fin de la position du bateau à poser
+        :param longueur_bateau : longueur du bateau attendue
+        """
+        if case_dep[0] == case_fin[0]:  # même lettre, pose horizontale
+            if int(case_fin[1]) - int(case_dep[1]) + 1 == longueur_bateau:
+                self.longueurs_bateaux.pop(0)
+                self.poser_bateau(case_dep, case_fin)
+            else:
+                # Label()......
+                print('Emplacement invalide: vous devez poser un bateau de taille', longueur_bateau)
+
+        elif case_dep[1] == case_fin[1]:  # même numéro, pose verticale
+            if ord(case_fin[0]) - ord(case_dep[0]) + 1 == longueur_bateau:
+                self.longueurs_bateaux.pop(0)
+                self.poser_bateau(case_dep, case_fin)
+            else:
+                # Label()......
+                print('Emplacement invalide: vous devez poser un bateau de taille', longueur_bateau)
+
+    def poser_bateau(self, case_dep: str, case_fin: str) -> None:
+        """
+        Poser les bateaux sur son plateau de jeu
+        :param case_dep : str, début de la position du bateau à poser
+        :param case_fin : str, fin de la position du bateau à poser
+        """
+        cases_a_poser = []
+        cases_bateaux = []
+
+        for cle, valeur in self.joueur_client.jeu.items():
+            lettre, num_case = cle[0], int(cle[1:])
+
+            if case_dep[0] == case_fin[0]:  # même lettre, pose horizontale
+                if lettre == case_dep[0] and int(case_dep[1:]) <= num_case <= int(case_fin[1:]):
+                    cases_a_poser.append(valeur)
+                    cases_bateaux.append(lettre + str(num_case))
+
+            else:  # même numéro, pose verticale
+                if num_case == int(case_dep[1:]) and ord(case_dep[0]) <= ord(lettre) <= ord(case_fin[0]):
+                    cases_a_poser.append(valeur)
+                    cases_bateaux.append(lettre + str(num_case))
+
+        for case in cases_a_poser:
+            x, y = case[0], case[1]
+            self.poser_image(x, y, 'bateau')
+
+        self.joueur_client.bateaux.append(tuple([case for case in cases_bateaux]))
+        print(self.joueur_client.bateaux)
+
+
 
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
