@@ -329,7 +329,7 @@ class BatailleNavaleClient:
                 self.pop_up('Attention', 'Vous ne pouvez pas placer de bateau ici')
 
 
-        if valide == True:
+        if valide:
             self.longueurs_bateaux.pop(0)
             # on pose les images du bateau
             for case in cases_a_poser:
