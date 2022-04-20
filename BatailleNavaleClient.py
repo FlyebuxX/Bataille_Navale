@@ -19,6 +19,7 @@ class Joueur:
         self.pseudo = pseudo
         self.jeu = deck
         self.bateaux = []
+        self.bateaux_coulés = [[], [], [], [], []]
         self.cases_interdites = []
         self.cases_jouees = []
         self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
@@ -166,8 +167,20 @@ class BatailleNavaleClient:
                 self.joueur_client.bateaux[bateau].pop(case_touchee)
                 if len(self.joueur_client.bateaux[bateau]) == 0:
                     tir = 'coule'
+                    # remplace les images 'touché' par des 'coulé'
+                    for i in self.joueur_client.bateaux_coulés[bateau] :
+                        x = self.joueur_client.jeu[i][0]
+                        y = self.joueur_client.jeu[i][1]
+                        self.poser_image(x, y, 'coule')
+                        x = self.ennemi.jeu[i][0]
+                        y = self.ennemi.jeu[i][1]
+                        self.poser_image(x, y, 'coule')
+                        
                 else:
                     tir = 'touche'
+                    # ajoute la case touché pour remplacer ensuite par 'coulé'
+                    self.joueur_client.bateaux_coulés[bateau].append(case)
+                    print(self.joueur_client.bateaux_coulés)
         return tir
 
     def detection_clic(self, event) -> tuple:
