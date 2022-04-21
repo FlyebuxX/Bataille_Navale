@@ -1,7 +1,7 @@
 # =======================================================================================================
 # IMPORTATIONS
 # ========================================================================================================
-
+import tkinter.font
 from tkinter import *
 from client import Client
 from math import sqrt
@@ -70,7 +70,7 @@ class BatailleNavaleClient:
         self.longueurs_bateaux = [5, 4, 3, 3, 2]
 
     # -------------------------------------------------------------------------------------------------- #
-    # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                             #
+    # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                    #
     # -------------------------------------------------------------------------------------------------- #
 
     def convertisseur_dico_vers_str(self, jeu_liste) -> str:
@@ -282,6 +282,8 @@ class BatailleNavaleClient:
                             case_fin = self.chercher_case(self.deux_derniers_clics[1][0],
                                                           self.deux_derniers_clics[1][1])
                             self.verifier_position_bateau(case_dep, case_fin, self.longueurs_bateaux[0])
+
+
                             self.deux_derniers_clics = []
 
                         else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1e fois
@@ -413,6 +415,12 @@ class BatailleNavaleClient:
             # on met à jour la liste des bateaux
             self.joueur_client.bateaux.append([case for case in cases_bateaux])
 
+            if len(self.longueurs_bateaux) > 0:
+                # on met à jour le message indiquant le nombre de bateaux à poser
+                label['text'] = 'Poser un bateau de longueur ' + str(self.longueurs_bateaux[0])
+            else:
+                label['text'] = 'Que la bataille commence !'
+
 
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
@@ -429,10 +437,16 @@ zone_dessin.pack()
 
 # Centrer la fenêtre
 nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
-tk.geometry('1100x600+' + str(nouveau_x) + '+' + str(nouveau_y))
+tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
 board_image = PhotoImage(file="images/jeu.gif")
 fond_board = zone_dessin.create_image(550, 300, image=board_image)
 zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
+
+# Message
+mess = 'Poser un bateau de longueur ' + str(bataille_navale_client.longueurs_bateaux[0])
+font = tkinter.font.Font(family='Helvetica', size=14)
+label = Label(tk, text=mess, bg='#d1d0cb', height=2, padx=2, pady=2, fg='#142396', font=font)
+label.pack(side=BOTTOM)
 
 # Jeu
 bataille_navale_client.coordonnees_cases()
