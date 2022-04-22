@@ -21,6 +21,7 @@ class Joueur:
         self.jeu = deck
         self.bateaux = []
         self.bateaux_coules = [[], [], [], [], []]
+        self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
         self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
@@ -49,7 +50,7 @@ class BatailleNavaleClient:
     def __init__(self, joueur1: str):
         self.joueur_client = Joueur(joueur1)
         self.joueur_client.initialiser_plateau()
-        self.phase = "pose_bateau"  # 'pose_bateau' / 'tour_joueur' / 'tour_adverse'
+        self.phase = "pose_bateau"  # 'pose_bateau' / 'tour_joueur' / 'tour_adverse' /'fin'
         self.cases_adjacentes = {}
         self.set = {
             self.joueur_client.pseudo: self.joueur_client.jeu,
@@ -251,6 +252,9 @@ class BatailleNavaleClient:
                     # => lorsque l'on reçoit la case
                     event.x, event.y = self.joueur_client.jeu[case][0], self.joueur_client.jeu[case][1]
                     self.poser_image(event.x, event.y, img, False)
+                    if self.joueur_client.bateaux_restants == 0:
+                        self.pop_up('Bravo !', str(self.joueur_client.pseudo) + ' a gagné')
+                        self.phase = 'fin'
 
             elif self.phase == 'tour_adverse':
 
@@ -261,6 +265,9 @@ class BatailleNavaleClient:
                 self.poser_image(event.x, event.y, img, False)
                 # => on envoie le résultat
                 # self.phase = 'tour_joueur'
+                if self.joueur_client.bateaux_restants == 0:
+                        self.pop_up('Bravo !', str(self.ennemi.pseudo) + ' a gagné')
+                        self.phase = 'fin'
 
             elif self.phase == "pose_bateau":
                 if len(self.longueurs_bateaux) > 0:  # s'il y a encore des bateaux à poser
@@ -324,6 +331,7 @@ class BatailleNavaleClient:
                 self.joueur_client.bateaux[bateau].pop(case_touchee)
                 if len(self.joueur_client.bateaux[bateau]) == 0:
                     tir = 'coule'
+                    self.joueur_client.bateaux_restants -= 1
                     # remplace les images 'touché' par des 'coulé'
                     for i in self.joueur_client.bateaux_coules[bateau]:
                         for case_touchee in self.tirs_reussis:
@@ -332,6 +340,7 @@ class BatailleNavaleClient:
                                 img_coule = PhotoImage(file='images/coule.gif')
                                 zone_dessin.itemconfig(case_touchee[1], image=img_coule)
                                 case_touchee[1] = img_coule
+
                 else:
                     tir = 'touche'
                     # ajoute la case touché pour remplacer ensuite par 'coulé'
