@@ -157,11 +157,9 @@ class BatailleNavaleClient:
         elif self.phase == "tour_joueur":
             jeu = self.ennemi.jeu
 
-        distances_milieux = jeu
-
         # trouver de quel milieu et donc de quelle case le clic se rapproche
         dist_courante, case = 1000, ''  # on fixe des valeurs par défaut
-        for cle, valeur in distances_milieux.items():
+        for cle, valeur in jeu.items():
             distance_avec_point = sqrt((valeur[0] - x) ** 2 + (valeur[1] - y) ** 2)
             if distance_avec_point < dist_courante:
                 dist_courante = distance_avec_point
