@@ -26,7 +26,7 @@ class Joueur:
         self.cases_interdites = []
         self.cases_jouees = []
         self.tirs_reussis = []
-        self.connexion_serveur = Serveur('Serveur', '26.215.237.217', 5000, 2)
+        self.connexion_serveur = Serveur('Serveur', '26.255.135.38', 5000, 2)
 
         self.initialiser_plateau()
 
@@ -100,6 +100,7 @@ class BatailleNavaleServeur:
                 self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
             else:
                 self.phase = 'tour_joueur'
+                label['text'] = 'A ton tour !'
         self.joueur_serveur.connexion_serveur.envoyer_message(resultat)
         self.joueur_serveur.connexion_serveur.envoyer_message(str(nb_bateau))
 
@@ -266,6 +267,7 @@ class BatailleNavaleServeur:
                             self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_joueur'
+                    label['text'] = 'A ton tour !'
 
             elif self.phase == 'tour_joueur':
                 case = self.chercher_case(event.x, event.y)
@@ -274,7 +276,7 @@ class BatailleNavaleServeur:
                     resultat = self.joueur_serveur.connexion_serveur.recevoir_message()
                     nb_bateau = self.joueur_serveur.connexion_serveur.recevoir_message()
 
-                    nx, ny = [(value[0], value[1]) for key, value in self.ennemi_client.jeu.items() if key == case]
+                    nx, ny = jeu[case][0], jeu[case][1]
                     num_img = self.poser_image(nx, ny, resultat)
                     self.joueur_serveur.cases_jouees.append(case)
                     if resultat == 'touche':
@@ -295,6 +297,7 @@ class BatailleNavaleServeur:
                         self.phase = 'fin'
                     else:
                         self.phase = 'tour_adverse'
+                        label['text'] = "A l'adversaire !"
                         self.recevoir_clic()
 
     def validation_clic(self, coords: tuple) -> bool:
@@ -322,7 +325,7 @@ class BatailleNavaleServeur:
             bat = self.joueur_serveur.bateaux[bateau]
             # si on touche un bateau
             if case in bat:
-                for i in range(len(bat)):
+                for i in range(len(bat) - 1):
                     if bat[i] == case:
                         bat.pop(i)
                 

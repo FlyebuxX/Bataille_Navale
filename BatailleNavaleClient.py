@@ -26,7 +26,7 @@ class Joueur:
         self.cases_interdites = []
         self.cases_jouees = []
         self.tirs_reussis = []
-        self.connexion_client = Client('Serveur', '26.215.237.217', 5000)
+        self.connexion_client = Client('Serveur', '26.255.135.38', 5000)
 
         self.initialiser_plateau()
 
@@ -100,6 +100,7 @@ class BatailleNavaleClient:
                 self.pop_up("Bravo", str(self.ennemi_serveur.pseudo) + ' a gagné !')
             else:
                 self.phase = 'tour_joueur'
+                label['text'] = 'A ton tour !'
         self.joueur_client.connexion_client.envoyer_message(resultat)
         self.joueur_client.connexion_client.envoyer_message(str(nb_bateau))
 
@@ -267,6 +268,7 @@ class BatailleNavaleClient:
                             self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_adverse'
+                    label['text'] = "A l'adversaire !"
                     self.recevoir_clic()
 
             elif self.phase == 'tour_joueur':
@@ -275,7 +277,8 @@ class BatailleNavaleClient:
                     self.joueur_client.connexion_client.envoyer_message(case)
                     resultat = self.joueur_client.connexion_client.recevoir_message()
                     nb_bateau = self.joueur_client.connexion_client.recevoir_message()
-                    num_img = self.poser_image(event.x, event.y, resultat)
+                    nx, ny = jeu[case][0], jeu[case][1]
+                    num_img = self.poser_image(nx, ny, resultat)
                     self.joueur_client.cases_jouees.append(case)
                     if resultat == 'touche':
                         self.joueur_client.tirs_reussis.append([case, num_img])
@@ -295,6 +298,7 @@ class BatailleNavaleClient:
                         self.phase = 'fin'
                     else:
                         self.phase = 'tour_adverse'
+                        label['text'] = "A l'adversaire !"
                         self.recevoir_clic()
 
 
@@ -324,10 +328,9 @@ class BatailleNavaleClient:
             # si on touche un bateau
             if case in bat:
                 print(self.joueur_client.bateaux, case, bat, bateau)
-                for i in range(len(bat)):
-                    if i < len(bat):
-                        if bat[i] == case:
-                            bat.pop(i)
+                for i in range(len(bat) - 1):
+                    if bat[i] == case:
+                        bat.pop(i)
                 if len(bat) == 0:
                     resultat = 'coule'
                 else:
