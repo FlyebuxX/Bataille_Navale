@@ -1,11 +1,12 @@
 # =======================================================================================================
 # IMPORTATIONS
 # ========================================================================================================
-import tkinter.font
-from tkinter import *
+
+
 from client import Client
 from math import sqrt
-
+from tkinter import *
+import tkinter.font
 # =======================================================================================================
 # CLASS
 # =======================================================================================================
@@ -16,15 +17,17 @@ class Joueur:
     Joueur de la bataille navale
     """
 
-    def __init__(self, pseudo: str, deck=[]):
+    def __init__(self, pseudo: str):
         self.pseudo = pseudo
-        self.jeu = deck
+        self.jeu = []
         self.bateaux = []
         self.bateaux_coules = [[], [], [], [], []]
         self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
         self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
+
+        self.initialiser_plateau()
 
     def initialiser_plateau(self) -> None:
         """
@@ -49,26 +52,24 @@ class BatailleNavaleClient:
 
     def __init__(self, joueur1: str):
         self.joueur_client = Joueur(joueur1)
-        self.joueur_client.initialiser_plateau()
         self.phase = "pose_bateau"  # 'pose_bateau' / 'tour_joueur' / 'tour_adverse' /'fin'
         self.cases_adjacentes = {}
-        self.set = {
-            self.joueur_client.pseudo: self.joueur_client.jeu,
-        }
-
-        # recevoir le pseudo de l'ennemi
-        # pseudo_ennemi = self.joueur_client.connexion_client.recevoir_message()
-        # deck_ennemi = self.joueur_client.connexion_client.recevoir_message()
-        # self.ennemi = Joueur(pseudo_ennemi, deck_ennemi)
-        # self.set[pseudo_ennemi] = self.ennemi.jeu
-
-        self.ennemi = Joueur('Jack')
-        self.set['Jack'] = self.ennemi.jeu
-
         self.images = []
         self.tirs_reussis = []
         self.deux_derniers_clics = []
         self.longueurs_bateaux = [5, 4, 3, 3, 2]
+
+        # ============================================================================ #
+        # COMMUNICATION AVEC LE CLIENT ENNEMI                                          #
+        # ============================================================================ #
+
+        self.joueur_client.connexion()
+
+        # recevoir le pseudo du serveur ennemi
+        pseudo_ennemi_serveur = self.joueur_client.connexion_client.recevoir_message()
+        self.ennemi_serveur = Joueur(pseudo_ennemi_serveur)
+        # envoyer le pseudo
+        self.joueur_client.connexion_client.envoyer_message(self.joueur_client.pseudo)
 
     # -------------------------------------------------------------------------------------------------- #
     # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                    #
@@ -228,48 +229,17 @@ class BatailleNavaleClient:
         :return event.y : int
         :return clic_valide : bool
         """
+        jeu, case = {}, ''
         # prend la grille selon la phase du jeu
-        if self.phase == "pose_bateau" or self.phase == 'tour_adverse':
+        if self.phase == "pose_bateau" or self.phase == 'tour_joueur':
             jeu = self.joueur_client.jeu
-        elif self.phase == "tour_joueur":
-            jeu = self.ennemi.jeu
+        else:  # 'tour adverse'
+            jeu = self.ennemi_serveur.jeu
 
         clic_valide = self.validation_clic((event.x, event.y))
         if clic_valide:
-            if self.phase == "tour_joueur":
-                # prend les coordonnées du milieu de la case cliquée
-                case = self.chercher_case(event.x, event.y)
-                event.x, event.y = jeu[case][0], jeu[case][1]
 
-                cases_jouees = [c[0] for c in self.joueur_client.cases_jouees]  # on récupère les cases sans les id
-
-                if case not in cases_jouees:  # l'emplacement est disponible
-                    img = self.tir(case)  # => envoyer la case à l'adversaire
-                    num_img = self.poser_image(event.x, event.y, img, True)
-                    self.joueur_client.cases_jouees.append((case, num_img))
-
-                    # self.phase = 'tour_adverse'
-                    # => lorsque l'on reçoit la case
-                    event.x, event.y = self.joueur_client.jeu[case][0], self.joueur_client.jeu[case][1]
-                    self.poser_image(event.x, event.y, img, False)
-                    if self.joueur_client.bateaux_restants == 0:
-                        self.pop_up('Bravo !', str(self.joueur_client.pseudo) + ' a gagné')
-                        self.phase = 'fin'
-
-            elif self.phase == 'tour_adverse':
-
-                # => on reçoit la case
-                case = self.chercher_case(event.x, event.y)
-                img = self.tir(case)
-                event.x, event.y = jeu[case][0], jeu[case][1]
-                self.poser_image(event.x, event.y, img, False)
-                # => on envoie le résultat
-                # self.phase = 'tour_joueur'
-                if self.joueur_client.bateaux_restants == 0:
-                        self.pop_up('Bravo !', str(self.ennemi.pseudo) + ' a gagné')
-                        self.phase = 'fin'
-
-            elif self.phase == "pose_bateau":
+            if self.phase == "pose_bateau":
                 if len(self.longueurs_bateaux) > 0:  # s'il y a encore des bateaux à poser
                     case = self.chercher_case(event.x, event.y)
                     if case in self.joueur_client.cases_interdites:  # si la case est valide
@@ -287,16 +257,42 @@ class BatailleNavaleClient:
                             case_fin = self.chercher_case(self.deux_derniers_clics[1][0],
                                                           self.deux_derniers_clics[1][1])
                             self.verifier_position_bateau(case_dep, case_fin, self.longueurs_bateaux[0])
-
-
                             self.deux_derniers_clics = []
-
-                        else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1e fois
+                        else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1ère fois
                             event.x, event.y = jeu[case][0], jeu[case][1]
                             self.poser_image(event.x, event.y, 'ancre', False)
-
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
-                    self.phase = 'tour_joueur'
+                    self.phase = 'tour_adverse'
+
+            else:
+                # recevoir la case adverse, laquelle est forcément valide
+                case_adverse = self.joueur_client.connexion_client.recevoir_message()
+                img = self.tir(case_adverse)
+                event.x, event.y = jeu[case_adverse][0], jeu[case_adverse][1]
+                self.poser_image(event.x, event.y, img, False)
+
+                if self.ennemi_serveur.bateaux_restants == 0:
+                    self.pop_up('Bravo !', str(self.ennemi_serveur.pseudo) + ' a gagné')
+                    self.phase = 'fin'
+
+                self.phase, jeu = 'tour_joueur', self.joueur_client.jeu
+                # chercher les coordonnées du milieu de la case où il y a eu un clic
+                case_joueur = self.chercher_case(event.x, event.y)
+                event.x, event.y = jeu[case_joueur][0], jeu[case_joueur][1]
+
+                cases_jouees = [case[0] for case in self.joueur_client.cases_jouees]  # on récupère les cases sans les id
+
+                if case_joueur not in cases_jouees:  # l'emplacement est disponible
+                    img = self.tir(case)
+                    # envoyer la case à l'adversaire
+                    self.joueur_client.connexion_client.envoyer_message(img)
+                    # poser l'image correspondant à la case
+                    num_img = self.poser_image(event.x, event.y, img, True)
+                    self.joueur_client.cases_jouees.append((case, num_img))
+
+                    if self.joueur_client.bateaux_restants == 0:
+                        self.pop_up('Bravo !', str(self.joueur_client.pseudo) + ' a gagné')
+                        self.phase = 'fin'
 
         return event.x, event.y, clic_valide
 
@@ -320,7 +316,7 @@ class BatailleNavaleClient:
         :param case : str, case du tir
         :return : str, le résultat du tir
         """
-        tir = 'eau'  # valeur par défaut
+        tir, case_touchee = 'eau', ''  # valeurs par défaut
         for bateau in range(len(self.joueur_client.bateaux)):
             # si on touche un bateau
             if case in self.joueur_client.bateaux[bateau]:
