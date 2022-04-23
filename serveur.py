@@ -47,7 +47,7 @@ class Serveur:
 
     def encoder_message(self, message):
         """
-        Méthode qui encode un massage
+        Méthode qui encode un message
         :return message encoded :
         """
         return message.encode()
@@ -58,12 +58,11 @@ class Serveur:
         :param message : message
         :return message_converti : str
         """
-        message_converti = "\n" + self.machine_name + " : " + message
 
-        message_a_envoyer = self.encoder_message(message_converti)
+        message_a_envoyer = self.encoder_message(message)
         self.connexion_avec_client.send(message_a_envoyer)
 
-        return message_converti
+        return message
 
     def recevoir_message(self) -> str:
         """

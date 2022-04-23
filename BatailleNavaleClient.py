@@ -25,7 +25,8 @@ class Joueur:
         self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
-        self.connexion_client = Client('Machine_Name', '26.215.237.217', 5000)
+        self.tirs_reussis = []
+        self.connexion_client = Client('Serveur', '26.255.135.38', 5000)
 
         self.initialiser_plateau()
 
@@ -55,7 +56,6 @@ class BatailleNavaleClient:
         self.phase = "pose_bateau"  # 'pose_bateau' / 'tour_joueur' / 'tour_adverse' /'fin'
         self.cases_adjacentes = {}
         self.images = []
-        self.tirs_reussis = []
         self.deux_derniers_clics = []
         self.longueurs_bateaux = [5, 4, 3, 3, 2]
 
@@ -71,29 +71,38 @@ class BatailleNavaleClient:
         # envoyer le pseudo
         self.joueur_client.connexion_client.envoyer_message(self.joueur_client.pseudo)
 
+    def recevoir_clic(self):
+        """
+        Méthode qui permet de recevoir le clic du joueur adverse
+        """ 
+        # recoit la case du joueur adverse
+        case = self.joueur_client.connexion_client.recevoir_message()
+        resultat, nb_bateau = self.tir(case)
+        x = self.joueur_client.jeu[case][0]
+        y = self.joueur_client.jeu(case)[1]
+        num_img = self.poser_image(x, y, resultat)
+        if resultat == 'touche':
+            self.ennemi_serveur.tirs_reussis.append([case, num_img])
+        elif resultat == 'coule':
+            for i in self.joueur_client.bateaux_coules[nb_bateau]:
+                for case_touchee in self.ennemi_serveur.tirs_reussis:
+                    case_2, num_img = case_touchee[0], case_touchee[1]
+                    if case_2 == i:
+                        img_coule = PhotoImage(file='images/coule.gif')
+                        zone_dessin.itemconfig(num_img, image=img_coule)
+                        case_touchee[1] = img_coule
+        
+            self.joueur_client.bateaux_restants -= 1
+            if self.joueur_client.bateaux_restants == 0:
+                self.phase = 'fin'
+                self.pop_up("Bravo", str(self.ennemi_serveur.pseudo) + ' a gagné !')
+            else:
+                self.phase = 'tour_joueur'
+        self.joueur_client.connexion_client.envoyer_message([resultat, nb_bateau])
+
     # -------------------------------------------------------------------------------------------------- #
     # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                    #
     # -------------------------------------------------------------------------------------------------- #
-
-    def convertisseur_dico_vers_str(self, jeu_liste) -> str:
-        """
-        Méthode qui convertit un jeu en chaîne de caractère
-        :param jeu_liste : list
-        :return dico_vers_str : conversion de la liste en string
-        """
-        dico_vers_str = ''
-        for ligne in jeu_liste:
-            for element in ligne:
-                dico_vers_str += str(element)
-
-        return dico_vers_str
-
-    def envoyer_jeu(self) -> None:
-        """
-        Méthode qui permet d'envoyer le jeu du client, de la forme d'un dictionnaire vers une chaîne de caractères
-        """
-        jeu_str = self.convertisseur_dico_vers_str(self.joueur_client.jeu)
-        self.joueur_client.connexion_client.envoyer_message(jeu_str)
 
     def pop_up(self, titre: str, texte_pop_up: str) -> None:
         """
@@ -116,13 +125,12 @@ class BatailleNavaleClient:
         var_pop_up.grab_set()
         tk.wait_window(var_pop_up)
 
-    def poser_image(self, x: int, y: int, type_tir: str, ajouter_image: bool) -> int:
+    def poser_image(self, x: int, y: int, type_tir: str) -> int:
         """
         Méthode qui crée une nouvelle image sur la zone de dessin
         :param x : int
         :param y : int
         :param type_tir : str, touche, eau, coule
-        :param ajouter_image: bool
         :return num_img : int, id de l'image posée
         """
         types = {
@@ -137,9 +145,6 @@ class BatailleNavaleClient:
         num_img = zone_dessin.create_image(x, y, image=img)
         self.images.append([num_img, img])
 
-        if type_tir == 'touche' and ajouter_image:
-            case = self.chercher_case(x, y)
-            self.tirs_reussis.append([case, num_img, img])
         return num_img
 
     # -------------------------------------------------------------------------------------------------- #
@@ -221,24 +226,20 @@ class BatailleNavaleClient:
     # --- MÉTHODES RELATIVES A LA GESTION DES CLICS                                                      #
     # -------------------------------------------------------------------------------------------------- #
 
-    def detection_clic(self, event) -> tuple:
+    def detection_clic(self, event) -> None:
         """
-        Méthode qui renvoie les coordonnées du clic de souris détecté sur l'écran
+        Méthode qui détecte le clic du joueur et agit selon la phase du jeu
         :param event : événement
-        :return event.x : int
-        :return event.y : int
-        :return clic_valide : bool
         """
         jeu, case = {}, ''
         # prend la grille selon la phase du jeu
-        if self.phase == "pose_bateau" or self.phase == 'tour_joueur':
+        if self.phase == "pose_bateau":
             jeu = self.joueur_client.jeu
-        else:  # 'tour adverse'
+        elif self.phase == 'tour_joueur':
             jeu = self.ennemi_serveur.jeu
 
         clic_valide = self.validation_clic((event.x, event.y))
         if clic_valide:
-
             if self.phase == "pose_bateau":
                 if len(self.longueurs_bateaux) > 0:  # s'il y a encore des bateaux à poser
                     case = self.chercher_case(event.x, event.y)
@@ -260,41 +261,39 @@ class BatailleNavaleClient:
                             self.deux_derniers_clics = []
                         else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1ère fois
                             event.x, event.y = jeu[case][0], jeu[case][1]
-                            self.poser_image(event.x, event.y, 'ancre', False)
+                            self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_adverse'
+                    self.recevoir_clic()
 
-            else:
-                # recevoir la case adverse, laquelle est forcément valide
-                case_adverse = self.joueur_client.connexion_client.recevoir_message()
-                img = self.tir(case_adverse)
-                event.x, event.y = jeu[case_adverse][0], jeu[case_adverse][1]
-                self.poser_image(event.x, event.y, img, False)
+            elif self.phase == 'tour_joueur':
+                case = self.chercher_case(event.x, event.y)
+                if case not in self.joueur_client.cases_jouees:
+                    self.joueur_client.connexion_client.envoyer_message(case)
+                    tir = self.joueur_client.connexion_client.recevoir_message()
+                    resultat, nb_bateau = tir[0], tir[1]
+                    num_img = self.poser_image(event.x, event.y, resultat)
+                    self.joueur_client.cases_jouees.append(case)
+                    if resultat == 'touche':
+                        self.joueur_client.tirs_reussis.append([case, num_img])
 
-                if self.ennemi_serveur.bateaux_restants == 0:
-                    self.pop_up('Bravo !', str(self.ennemi_serveur.pseudo) + ' a gagné')
-                    self.phase = 'fin'
-
-                self.phase, jeu = 'tour_joueur', self.joueur_client.jeu
-                # chercher les coordonnées du milieu de la case où il y a eu un clic
-                case_joueur = self.chercher_case(event.x, event.y)
-                event.x, event.y = jeu[case_joueur][0], jeu[case_joueur][1]
-
-                cases_jouees = [case[0] for case in self.joueur_client.cases_jouees]  # on récupère les cases sans les id
-
-                if case_joueur not in cases_jouees:  # l'emplacement est disponible
-                    img = self.tir(case)
-                    # envoyer la case à l'adversaire
-                    self.joueur_client.connexion_client.envoyer_message(img)
-                    # poser l'image correspondant à la case
-                    num_img = self.poser_image(event.x, event.y, img, True)
-                    self.joueur_client.cases_jouees.append((case, num_img))
-
-                    if self.joueur_client.bateaux_restants == 0:
+                    if resultat == 'coule':
+                        for i in self.joueur_client.bateaux_coules[nb_bateau]:
+                            for case_touchee in self.joueur_client.tirs_reussis:
+                                case_2, num_img = case_touchee[0], case_touchee[1]
+                                if case_2 == i:
+                                    img_coule = PhotoImage(file='images/coule.gif')
+                                    zone_dessin.itemconfig(num_img, image=img_coule)
+                                    case_touchee[1] = img_coule
+                        self.ennemi_serveur.bateaux_restants -= 1
+                    
+                    if self.ennemi_serveur.bateaux_restants == 0:
                         self.pop_up('Bravo !', str(self.joueur_client.pseudo) + ' a gagné')
                         self.phase = 'fin'
+                    else:
+                        self.phase = 'tour_adverse'
+                        self.recevoir_clic()
 
-        return event.x, event.y, clic_valide
 
     def validation_clic(self, coords: tuple) -> bool:
         """
@@ -316,32 +315,23 @@ class BatailleNavaleClient:
         :param case : str, case du tir
         :return : str, le résultat du tir
         """
-        tir, case_touchee = 'eau', ''  # valeurs par défaut
+        resultat = 'eau'  # valeurs par défaut
         for bateau in range(len(self.joueur_client.bateaux)):
+            bat = self.joueur_client.bateaux[bateau]
             # si on touche un bateau
-            if case in self.joueur_client.bateaux[bateau]:
-                # si le bateau est coulé
-                for coord in range(len(self.joueur_client.bateaux[bateau])):
-                    if self.joueur_client.bateaux[bateau][coord] == case:
-                        case_touchee = coord
-                self.joueur_client.bateaux[bateau].pop(case_touchee)
-                if len(self.joueur_client.bateaux[bateau]) == 0:
-                    tir = 'coule'
-                    self.joueur_client.bateaux_restants -= 1
-                    # remplace les images 'touché' par des 'coulé'
-                    for i in self.joueur_client.bateaux_coules[bateau]:
-                        for case_touchee in self.tirs_reussis:
-                            case, num_img, adresse_img = case_touchee[0], case_touchee[1], case_touchee[2]
-                            if case == i:
-                                img_coule = PhotoImage(file='images/coule.gif')
-                                zone_dessin.itemconfig(case_touchee[1], image=img_coule)
-                                case_touchee[1] = img_coule
-
+            if case in bat:
+                for i in range(len(bat)):
+                    if bat[i] == case:
+                        bat.pop(i)
+                
+                if len(bat) == 0:
+                    resultat = 'coule'
+                    
                 else:
-                    tir = 'touche'
+                    resultat = 'touche'
                     # ajoute la case touché pour remplacer ensuite par 'coulé'
                     self.joueur_client.bateaux_coules[bateau].append(case)
-        return tir
+        return resultat, bateau
 
     # -------------------------------------------------------------------------------------------------- #
     # --- POSE DES BATEAUX                                                                               #
@@ -408,7 +398,7 @@ class BatailleNavaleClient:
             # on pose les images du bateau
             for case in cases_a_poser:
                 x, y = case[0], case[1:]
-                self.poser_image(x, y, 'bateau', False)
+                self.poser_image(x, y, 'bateau')
 
             # on met à jour la liste des cases interdites
             for case in cases_bateaux:
@@ -434,7 +424,7 @@ bataille_navale_client = BatailleNavaleClient(input('Nom du joueur (client) : ')
 
 # GUI
 tk = Tk()
-tk.title("Bataille Navale")
+tk.title("Bataille Navale: Joueur " + bataille_navale_client.joueur_client.pseudo)
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
 

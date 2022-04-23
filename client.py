@@ -41,12 +41,11 @@ class Client:
         :param message : message
         :return message_converti : str
         """
-        message_converti = "\n" + self.machine_name + " : " + message
 
-        message_a_envoyer = self.encoder_message(message_converti)
+        message_a_envoyer = self.encoder_message(message)
         self.CONNEXION_AVEC_SERVEUR.send(message_a_envoyer)
 
-        return message_converti
+        return message
 
     def recevoir_message(self) -> str:
         """
