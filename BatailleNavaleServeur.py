@@ -81,7 +81,7 @@ class BatailleNavaleServeur:
         case = self.joueur_serveur.connexion_serveur.recevoir_message()
         resultat, nb_bateau = self.tir(case)
         x = self.joueur_serveur.jeu[case][0]
-        y = self.joueur_serveur.jeu(case)[1]
+        y = self.joueur_serveur.jeu[case][1:]
         num_img = self.poser_image(x, y, resultat)
         if resultat == 'touche':
             self.ennemi_client.tirs_reussis.append([case, num_img])
@@ -100,7 +100,8 @@ class BatailleNavaleServeur:
                 self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
             else:
                 self.phase = 'tour_joueur'
-        self.joueur_serveur.connexion_serveur.envoyer_message([resultat, nb_bateau])
+        self.joueur_serveur.connexion_serveur.envoyer_message(resultat)
+        self.joueur_serveur.connexion_serveur.envoyer_message(str(nb_bateau))
 
     # -------------------------------------------------------------------------------------------------- #
     # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                    #
@@ -262,7 +263,7 @@ class BatailleNavaleServeur:
                             self.verifier_position_bateau(case_dep, case_fin, self.longueurs_bateaux[0])
                             self.deux_derniers_clics = []
                         else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1ère fois
-                            event.x, event.y = jeu[case][0], jeu[case][1]
+                            event.x, event.y = jeu[case][0], jeu[case][1:]
                             self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_joueur'
@@ -271,8 +272,8 @@ class BatailleNavaleServeur:
                 case = self.chercher_case(event.x, event.y)
                 if case not in self.joueur_serveur.cases_jouees:
                     self.joueur_serveur.connexion_serveur.envoyer_message(case)
-                    tir = self.joueur_serveur.connexion_serveur.recevoir_message()
-                    resultat, nb_bateau = tir[0], tir[1]
+                    resultat = self.joueur_serveur.connexion_serveur.recevoir_message()
+                    nb_bateau = self.joueur_serveur.connexion_serveur.recevoir_message()
                     num_img = self.poser_image(event.x, event.y, resultat)
                     self.joueur_serveur.cases_jouees.append(case)
                     if resultat == 'touche':
