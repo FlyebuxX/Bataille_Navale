@@ -25,7 +25,7 @@ class Joueur:
         self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
-        self.connexion_client = Client('Machine_Name', 'HOST', 'PORT')
+        self.connexion_client = Client('Machine_Name', '26.215.237.217', 5000)
 
         self.initialiser_plateau()
 
@@ -157,7 +157,7 @@ class BatailleNavaleClient:
         if self.phase == "pose_bateau":
             jeu = self.joueur_client.jeu
         elif self.phase == "tour_joueur":
-            jeu = self.ennemi.jeu
+            jeu = self.ennemi_serveur.jeu
 
         # trouver de quel milieu et donc de quelle case le clic se rapproche
         dist_courante, case = 1000, ''  # on fixe des valeurs par défaut
@@ -199,7 +199,7 @@ class BatailleNavaleClient:
             elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
         }
 
-        self.joueur_client.jeu, self.ennemi.jeu = coords_joueur_courant, coords_ennemi
+        self.joueur_client.jeu, self.ennemi_serveur.jeu = coords_joueur_courant, coords_ennemi
 
     def init_cases_adjacentes(self) -> None:
         """
