@@ -2,7 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-
+from time import sleep
 from serveur import Serveur
 from math import sqrt
 from tkinter import *
@@ -294,6 +294,7 @@ class BatailleNavaleServeur:
                         self.phase = 'fin'
                     else:
                         self.phase = 'tour_adverse'
+                        sleep(10)
                         self.recevoir_clic()
 
     def validation_clic(self, coords: tuple) -> bool:

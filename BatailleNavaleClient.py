@@ -2,7 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-
+from time import sleep
 from client import Client
 from math import sqrt
 from tkinter import *
@@ -265,6 +265,7 @@ class BatailleNavaleClient:
                             self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_adverse'
+                    sleep(10)
                     self.recevoir_clic()
 
             elif self.phase == 'tour_joueur':
@@ -293,6 +294,7 @@ class BatailleNavaleClient:
                         self.phase = 'fin'
                     else:
                         self.phase = 'tour_adverse'
+                        sleep(10)
                         self.recevoir_clic()
 
 
