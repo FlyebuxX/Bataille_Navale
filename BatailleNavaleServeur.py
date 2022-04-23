@@ -2,7 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-from time import sleep
+
 from serveur import Serveur
 from math import sqrt
 from tkinter import *
@@ -26,7 +26,7 @@ class Joueur:
         self.cases_interdites = []
         self.cases_jouees = []
         self.tirs_reussis = []
-        self.connexion_serveur = Serveur('Serveur', '26.255.135.38', 5000, 2)
+        self.connexion_serveur = Serveur('Serveur', '26.215.237.217', 5000, 2)
 
         self.initialiser_plateau()
 
@@ -76,7 +76,7 @@ class BatailleNavaleServeur:
     def recevoir_clic(self):
         """
         Méthode qui permet de recevoir le clic du joueur adverse
-        """ 
+        """
         # recoit la case du joueur adverse
         case = self.joueur_serveur.connexion_serveur.recevoir_message()
         resultat, nb_bateau = self.tir(case)
@@ -143,7 +143,6 @@ class BatailleNavaleServeur:
             'eau': 'images/eau.gif',
             'ancre': 'images/ancre.gif'
         }
-
         img = PhotoImage(file=types[type_tir])
         num_img = zone_dessin.create_image(x, y, image=img)
         self.images.append([num_img, img])
@@ -274,7 +273,9 @@ class BatailleNavaleServeur:
                     self.joueur_serveur.connexion_serveur.envoyer_message(case)
                     resultat = self.joueur_serveur.connexion_serveur.recevoir_message()
                     nb_bateau = self.joueur_serveur.connexion_serveur.recevoir_message()
-                    num_img = self.poser_image(event.x, event.y, resultat)
+
+                    nx, ny = [(value[0], value[1]) for key, value in self.ennemi_client.jeu.items() if key == case]
+                    num_img = self.poser_image(nx, ny, resultat)
                     self.joueur_serveur.cases_jouees.append(case)
                     if resultat == 'touche':
                         self.joueur_serveur.tirs_reussis.append([case, num_img])
@@ -294,7 +295,6 @@ class BatailleNavaleServeur:
                         self.phase = 'fin'
                     else:
                         self.phase = 'tour_adverse'
-                        sleep(10)
                         self.recevoir_clic()
 
     def validation_clic(self, coords: tuple) -> bool:

@@ -2,7 +2,7 @@
 # IMPORTATIONS
 # ========================================================================================================
 
-from time import sleep
+
 from client import Client
 from math import sqrt
 from tkinter import *
@@ -26,7 +26,7 @@ class Joueur:
         self.cases_interdites = []
         self.cases_jouees = []
         self.tirs_reussis = []
-        self.connexion_client = Client('Serveur', '26.255.135.38', 5000)
+        self.connexion_client = Client('Serveur', '26.215.237.217', 5000)
 
         self.initialiser_plateau()
 
@@ -77,7 +77,9 @@ class BatailleNavaleClient:
         """ 
         # recoit la case du joueur adverse
         case = self.joueur_client.connexion_client.recevoir_message()
+        print('here', case)
         resultat, nb_bateau = self.tir(case)
+        print('res', resultat)
         x = self.joueur_client.jeu[case][0]
         y = self.joueur_client.jeu[case][1:]
         num_img = self.poser_image(x, y, resultat)
@@ -265,7 +267,6 @@ class BatailleNavaleClient:
                             self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_adverse'
-                    sleep(10)
                     self.recevoir_clic()
 
             elif self.phase == 'tour_joueur':
@@ -294,7 +295,6 @@ class BatailleNavaleClient:
                         self.phase = 'fin'
                     else:
                         self.phase = 'tour_adverse'
-                        sleep(10)
                         self.recevoir_clic()
 
 
@@ -323,13 +323,13 @@ class BatailleNavaleClient:
             bat = self.joueur_client.bateaux[bateau]
             # si on touche un bateau
             if case in bat:
+                print(self.joueur_client.bateaux, case, bat, bateau)
                 for i in range(len(bat)):
-                    if bat[i] == case:
-                        bat.pop(i)
-                
+                    if i < len(bat):
+                        if bat[i] == case:
+                            bat.pop(i)
                 if len(bat) == 0:
                     resultat = 'coule'
-                    
                 else:
                     resultat = 'touche'
                     # ajoute la case touché pour remplacer ensuite par 'coulé'
