@@ -322,7 +322,7 @@ class BatailleNavaleServeur:
         :param case : str, case du tir
         :return : str, le résultat du tir
         """
-        resultat = 'eau'  # valeurs par défaut
+        resultat, len_bateau = 'eau', 0  # valeurs par défaut
         for bateau in range(len(self.joueur_serveur.bateaux)):
             bat = self.joueur_serveur.bateaux[bateau]
             # si on touche un bateau
