@@ -82,7 +82,7 @@ class BatailleNavaleClient:
         num_img = self.poser_image(x, y, resultat)
         self.joueur_client.connexion_client.envoyer_message(resultat)
         self.joueur_client.connexion_client.envoyer_message(str(nb_bateau))
-        
+
         if resultat == 'touche':
             self.ennemi_serveur.bateaux_coules[nb_bateau].append(num_img)
 
@@ -427,14 +427,30 @@ class BatailleNavaleClient:
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
 
-
-bataille_navale_client = BatailleNavaleClient(input('Nom du joueur (client) : '))
-
 # GUI
 tk = Tk()
-tk.title("Bataille Navale: Joueur " + bataille_navale_client.joueur_client.pseudo)
+tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
+
+var_pop_up = Toplevel()  # création de la fenêtre pop up
+
+# centre la fenêtre
+y = int(tk.winfo_screenheight() / 2) - 35
+x = int(tk.winfo_screenwidth() / 2) - 250
+var_pop_up.geometry('500x70+' + str(x) + '+' + str(y))
+
+var_pop_up.title('Bataille Navale')
+Label(var_pop_up, text='Nom du joueur :').pack()
+pseudo = StringVar(tk)
+pseudo_entree = Entry(var_pop_up, textvariable=pseudo)
+pseudo_entree.pack()
+pseudo_entree.focus_force()
+Button(var_pop_up, text="Ok", command=var_pop_up.destroy).pack()
+var_pop_up.transient(tk)
+var_pop_up.grab_set()
+tk.wait_window(var_pop_up)
+bataille_navale_client = BatailleNavaleClient(pseudo.get())
 
 # Centrer la fenêtre
 nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
