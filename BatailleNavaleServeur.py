@@ -26,7 +26,7 @@ class Joueur:
         self.cases_interdites = []
         self.cases_jouees = []
         self.tirs_reussis = []
-        self.connexion_serveur = Serveur('Serveur', '26.215.237.217', 5000, 2)
+        self.connexion_serveur = Serveur('Serveur', '26.255.135.38', 5000, 2)
 
         self.initialiser_plateau()
 
@@ -85,22 +85,25 @@ class BatailleNavaleServeur:
         num_img = self.poser_image(x, y, resultat)
 
         if resultat == 'touche':
-            self.ennemi_client.tirs_reussis.append([case, num_img])
-        elif resultat == 'coule':
-            for i in self.joueur_serveur.bateaux_coules[nb_bateau]:
-                for case_touchee in self.ennemi_client.tirs_reussis:
-                    case_2, num_img = case_touchee[0], case_touchee[1]
-                    if case_2 == i:
-                        img_coule = PhotoImage(file='images/coule.gif')
-                        zone_dessin.itemconfig(num_img, image=img_coule)
-                        case_touchee[1] = img_coule
-            self.joueur_serveur.bateaux_restants -= 1
-            if self.joueur_serveur.bateaux_restants == 0:
-                self.phase = 'fin'
-                self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
+            self.ennemi_client.bateaux_coules[nb_bateau].append(num_img)
 
-        self.phase = 'tour_joueur'
-        label['text'] = 'A ton tour !'
+        elif resultat == 'coule':
+            for num_img in self.ennemi_client.bateaux_coules[nb_bateau]:
+                img_coule = PhotoImage(file='images/coule.gif')
+                zone_dessin.itemconfig(num_img, image=img_coule)
+                num_img = img_coule
+            self.joueur_serveur.bateaux_restants -= 1
+        if self.joueur_serveur.bateaux_restants == 0:
+            self.phase = 'fin'
+            self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
+
+        else:
+            self.phase = 'tour_joueur'
+            label['text'] = 'A ton tour !'
+
+        print(self.ennemi_client.bateaux_coules)
+
+        
         self.joueur_serveur.connexion_serveur.envoyer_message(resultat)
         self.joueur_serveur.connexion_serveur.envoyer_message(str(nb_bateau))
 
@@ -274,24 +277,23 @@ class BatailleNavaleServeur:
                 if case not in self.joueur_serveur.cases_jouees:
                     self.joueur_serveur.connexion_serveur.envoyer_message(case)
                     resultat = self.joueur_serveur.connexion_serveur.recevoir_message()
-                    nb_bateau = self.joueur_serveur.connexion_serveur.recevoir_message()
+                    nb_bateau = int(self.joueur_serveur.connexion_serveur.recevoir_message())
 
                     nx, ny = jeu[case][0], jeu[case][1]
                     num_img = self.poser_image(nx, ny, resultat)
                     self.joueur_serveur.cases_jouees.append(case)
                     if resultat == 'touche':
-                        self.joueur_serveur.tirs_reussis.append([case, num_img])
+                        self.joueur_serveur.bateaux_coules[nb_bateau].append(num_img)
 
                     if resultat == 'coule':
-                        for i in self.joueur_serveur.bateaux_coules[nb_bateau]:
-                            for case_touchee in self.joueur_serveur.tirs_reussis:
-                                case_2, num_img = case_touchee[0], case_touchee[1]
-                                if case_2 == i:
-                                    img_coule = PhotoImage(file='images/coule.gif')
-                                    zone_dessin.itemconfig(num_img, image=img_coule)
-                                    case_touchee[1] = img_coule
+                        for num_img in self.joueur_serveur.bateaux_coules[nb_bateau]:
+                            img_coule = PhotoImage(file='images/coule.gif')
+                            zone_dessin.itemconfig(num_img, image=img_coule)
+                            num_img = img_coule
                         self.ennemi_client.bateaux_restants -= 1
                     
+                    print(self.joueur_serveur.bateaux_coules)
+
                     if self.ennemi_client.bateaux_restants == 0:
                         self.pop_up('Bravo !', str(self.joueur_serveur.pseudo) + ' a gagné')
                         self.phase = 'fin'
@@ -325,18 +327,18 @@ class BatailleNavaleServeur:
             bat = self.joueur_serveur.bateaux[bateau]
             # si on touche un bateau
             if case in bat:
-                for i in range(len(bat) - 1):
-                    if bat[i] == case:
-                        bat.pop(i)
+                for i in range(len(bat)):
+                    if i < len(bat):
+                        if bat[i] == case:
+                            bat.pop(i)
 
                 if len(bat) == 0:
                     resultat = 'coule'
 
                 else:
                     resultat = 'touche'
-                    # ajoute la case touché pour remplacer ensuite par 'coulé'
-                    self.joueur_serveur.bateaux_coules[bateau].append(case)
-        return resultat, bateau
+                len_bateau = bateau
+        return resultat, len_bateau
 
     # -------------------------------------------------------------------------------------------------- #
     # --- POSE DES BATEAUX                                                                               #
