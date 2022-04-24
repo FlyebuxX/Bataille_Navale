@@ -19,14 +19,14 @@ class Joueur:
 
     def __init__(self, pseudo: str):
         self.pseudo = pseudo
-        self.jeu = []
+        self.jeu = {}
         self.bateaux = []
         self.bateaux_coules = [[], [], [], [], []]
         self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
         self.tirs_reussis = []
-        self.connexion_serveur = Serveur('Serveur', '26.255.135.38', 5000, 2)
+        self.connexion_serveur = Serveur('Serveur', '26.215.237.217', 5000, 2)
 
         self.initialiser_plateau()
 
@@ -77,12 +77,13 @@ class BatailleNavaleServeur:
         """
         Méthode qui permet de recevoir le clic du joueur adverse
         """
-        # recoit la case du joueur adverse
+        # recevoir la case du joueur adverse
         case = self.joueur_serveur.connexion_serveur.recevoir_message()
         resultat, nb_bateau = self.tir(case)
         x = self.joueur_serveur.jeu[case][0]
         y = self.joueur_serveur.jeu[case][1:]
         num_img = self.poser_image(x, y, resultat)
+
         if resultat == 'touche':
             self.ennemi_client.tirs_reussis.append([case, num_img])
         elif resultat == 'coule':
@@ -93,14 +94,13 @@ class BatailleNavaleServeur:
                         img_coule = PhotoImage(file='images/coule.gif')
                         zone_dessin.itemconfig(num_img, image=img_coule)
                         case_touchee[1] = img_coule
-        
             self.joueur_serveur.bateaux_restants -= 1
             if self.joueur_serveur.bateaux_restants == 0:
                 self.phase = 'fin'
                 self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
-            else:
-                self.phase = 'tour_joueur'
-                label['text'] = 'A ton tour !'
+
+        self.phase = 'tour_joueur'
+        label['text'] = 'A ton tour !'
         self.joueur_serveur.connexion_serveur.envoyer_message(resultat)
         self.joueur_serveur.connexion_serveur.envoyer_message(str(nb_bateau))
 
@@ -267,7 +267,7 @@ class BatailleNavaleServeur:
                             self.poser_image(event.x, event.y, 'ancre')
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_joueur'
-                    label['text'] = 'A ton tour !'
+                    label['text'] = 'A ton tour !'  # le serveur joue en premier
 
             elif self.phase == 'tour_joueur':
                 case = self.chercher_case(event.x, event.y)
@@ -298,7 +298,7 @@ class BatailleNavaleServeur:
                     else:
                         self.phase = 'tour_adverse'
                         label['text'] = "A l'adversaire !"
-                        self.recevoir_clic()
+                        zone_dessin.after(2000, self.recevoir_clic)
 
     def validation_clic(self, coords: tuple) -> bool:
         """
@@ -328,10 +328,10 @@ class BatailleNavaleServeur:
                 for i in range(len(bat) - 1):
                     if bat[i] == case:
                         bat.pop(i)
-                
+
                 if len(bat) == 0:
                     resultat = 'coule'
-                    
+
                 else:
                     resultat = 'touche'
                     # ajoute la case touché pour remplacer ensuite par 'coulé'
