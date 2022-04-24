@@ -22,7 +22,6 @@ class Serveur:
         self.CONNEXION_PRINCIPALE = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connexion_avec_client = None
         self.informations_client = None
-        self.__repr__()
 
     def configuration_serveur(self):
         """

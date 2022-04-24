@@ -20,7 +20,6 @@ class Client:
         self.PORT = port
         self.CONNEXION_AVEC_SERVEUR = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_info = None
-        self.__repr__()
 
     def connecter_appareil(self):
         """
