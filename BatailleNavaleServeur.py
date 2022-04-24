@@ -25,7 +25,7 @@ class Joueur:
         self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
-        self.connexion_serveur = Serveur('Serveur', '26.215.237.217', 5000, 2)
+        self.connexion_serveur = Serveur('Serveur', '26.255.135.38', 5000, 2)
 
         self.initialiser_plateau()
 
@@ -82,30 +82,30 @@ class BatailleNavaleServeur:
         resultat, nb_bateau = self.tir(case)
         x, y = self.joueur_serveur.jeu[case][0], self.joueur_serveur.jeu[case][1:]
         num_img = self.poser_image(x, y, resultat)
+        self.joueur_serveur.connexion_serveur.envoyer_message(resultat)
+        self.joueur_serveur.connexion_serveur.envoyer_message(str(nb_bateau))
 
         if resultat == 'touche':
-            self.bateaux_touches.append(num_img)
-            self.ennemi_client.bateaux_coules[nb_bateau].append(case)
+            self.ennemi_client.bateaux_coules[nb_bateau].append(num_img)
 
         elif resultat == 'coule':
-            for num_case in self.ennemi_client.bateaux_coules[nb_bateau]:
-                for elt in self.images:
-                    if elt[1] in self.bateaux_touches:
-                        img_coule = PhotoImage(file='images/coule.gif')
-                        zone_dessin.itemconfig(elt[1], image=img_coule)
-                        elt[1] = img_coule
+            for elt in self.images:
+                if elt[1] in self.ennemi_client.bateaux_coules[nb_bateau]:
+                    img_coule = PhotoImage(file='images/coule.gif')
+                    zone_dessin.itemconfig(elt[1], image=img_coule)
+                    elt[1] = img_coule
 
             self.joueur_serveur.bateaux_restants -= 1
 
         if self.joueur_serveur.bateaux_restants == 0:
             self.phase = 'fin'
             self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
+            label['text'] = str(self.ennemi_client.pseudo) + " a gagné"
         else:
             self.phase = 'tour_joueur'
             label['text'] = 'A ton tour !'
 
-        self.joueur_serveur.connexion_serveur.envoyer_message(resultat)
-        self.joueur_serveur.connexion_serveur.envoyer_message(str(nb_bateau))
+        
 
     # -------------------------------------------------------------------------------------------------- #
     # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                    #
@@ -286,24 +286,24 @@ class BatailleNavaleServeur:
                     nb_bateau = int(self.joueur_serveur.connexion_serveur.recevoir_message())
 
                     nx, ny = jeu[case][0], jeu[case][1]
-                    self.poser_image(nx, ny, resultat)
+                    num_img = self.poser_image(nx, ny, resultat)
                     self.joueur_serveur.cases_jouees.append(case)
                     if resultat == 'touche':
-                        self.joueur_serveur.bateaux_coules[nb_bateau].append(case)
+                        self.joueur_serveur.bateaux_coules[nb_bateau].append(num_img)
 
                     if resultat == 'coule':
-                        for num_case in self.joueur_serveur.bateaux_coules[nb_bateau]:
-                            for elt in self.images:
-                                if elt[0] == num_case and elt[1] > 17:
-                                    img_coule = PhotoImage(file='images/coule.gif')
-                                    zone_dessin.itemconfig(elt[1], image=img_coule)
-                                    elt[1] = img_coule
+                        for elt in self.images:
+                            if elt[1] in self.joueur_serveur.bateaux_coules[nb_bateau]:
+                                img_coule = PhotoImage(file='images/coule.gif')
+                                zone_dessin.itemconfig(elt[1], image=img_coule)
+                                elt[1] = img_coule
 
                         self.ennemi_client.bateaux_restants -= 1
 
                     if self.ennemi_client.bateaux_restants == 0:
                         self.pop_up('Bravo !', str(self.joueur_serveur.pseudo) + ' a gagné')
                         self.phase = 'fin'
+                        label['text'] = str(self.joueur_serveur.pseudo) + " a gagné"
                     else:
                         self.phase = 'tour_adverse'
                         label['text'] = "A l'adversaire !"
