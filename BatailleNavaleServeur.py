@@ -202,7 +202,6 @@ class BatailleNavaleServeur:
             elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
         }
 
-
         # grille du joueur adverse
         cases = [(chr(i) + str(k),
                   ((round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
@@ -287,7 +286,7 @@ class BatailleNavaleServeur:
                     nb_bateau = int(self.joueur_serveur.connexion_serveur.recevoir_message())
 
                     nx, ny = jeu[case][0], jeu[case][1]
-                    num_img = self.poser_image(nx, ny, resultat)
+                    self.poser_image(nx, ny, resultat)
                     self.joueur_serveur.cases_jouees.append(case)
                     if resultat == 'touche':
                         self.joueur_serveur.bateaux_coules[nb_bateau].append(case)
