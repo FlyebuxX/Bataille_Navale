@@ -7,8 +7,6 @@ from client import Client
 from math import sqrt
 from tkinter import *
 import tkinter.font
-
-
 # =======================================================================================================
 # CLASS
 # =======================================================================================================
@@ -27,7 +25,6 @@ class Joueur:
         self.bateaux_restants = 5
         self.cases_interdites = []
         self.cases_jouees = []
-        self.tirs_reussis = []
         self.connexion_client = Client('Serveur', '26.215.237.217', 5000)
 
         self.initialiser_plateau()
@@ -60,7 +57,7 @@ class BatailleNavaleClient:
         self.images = []
         self.deux_derniers_clics = []
         self.longueurs_bateaux = [5, 4, 3, 3, 2]
-        self.touche = []
+        self.bateaux_touches = []
 
         # ============================================================================ #
         # COMMUNICATION AVEC LE CLIENT ENNEMI                                          #
@@ -81,18 +78,17 @@ class BatailleNavaleClient:
         # recevoir la case du joueur adverse
         case = self.joueur_client.connexion_client.recevoir_message()
         resultat, nb_bateau = self.tir(case)
-        x = self.joueur_client.jeu[case][0]
-        y = self.joueur_client.jeu[case][1:]
+        x, y = self.joueur_client.jeu[case][0], self.joueur_client.jeu[case][1:]
         num_img = self.poser_image(x, y, resultat)
+
         if resultat == 'touche':
-            self.touche.append(num_img)
+            self.bateaux_touches.append(num_img)
             self.ennemi_serveur.bateaux_coules[nb_bateau].append(case)
 
         elif resultat == 'coule':
             for num_case in self.ennemi_serveur.bateaux_coules[nb_bateau]:
                 for elt in self.images:
-                    if elt[1] in self.touche:
-                        print(elt)
+                    if elt[1] in self.bateaux_touches:
                         img_coule = PhotoImage(file='images/coule.gif')
                         zone_dessin.itemconfig(elt[1], image=img_coule)
                         elt[1] = img_coule
@@ -167,7 +163,7 @@ class BatailleNavaleClient:
         Méthode qui permet de faire correspondre le clic d'un joueur à une case du plateau
         :param x : int
         :param y : int
-        :return case : case du plateau où il y a eu un clic
+        :return case : str, case du plateau où il y a eu un clic
         """
         jeu = {}
         # prend la grille selon la phase du jeu
@@ -181,13 +177,14 @@ class BatailleNavaleClient:
         for cle, valeur in jeu.items():
             distance_avec_point = sqrt((valeur[0] - x) ** 2 + (valeur[1] - y) ** 2)
             if distance_avec_point < dist_courante:
-                dist_courante = distance_avec_point
-                case = cle
+                dist_courante, case = distance_avec_point, cle
         return case
 
     def coordonnees_cases(self) -> None:
         """
         Méthode qui associe chaque case du jeu aux coordonnées de leur milieu
+        :param : None
+        :return : None
         """
         # prend les coordonnées des points inférieurs droits et supérieurs gauches des cases
         # grille du joueur local
@@ -203,6 +200,7 @@ class BatailleNavaleClient:
             elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
         }
 
+
         # grille du joueur adverse
         cases = [(chr(i) + str(k),
                   ((round(722 + 36 * (k - 1) - k * 1.8), round(163 + 34 * (i - 65) + abs(65 - i) * 1.8)),  # coords sup
@@ -210,7 +208,6 @@ class BatailleNavaleClient:
 
                  for i in range(65, 75) for k in range(1, 11)
                  ]
-
         # définir le milieu de chaque case
         coords_ennemi = {
             elt[0]: milieu(elt[1][0][0], elt[1][0][1], elt[1][1][0], elt[1][1][1]) for elt in cases
@@ -221,6 +218,8 @@ class BatailleNavaleClient:
     def init_cases_adjacentes(self) -> None:
         """
         Méthode qui crée un dictionnaire des cases adjacentes de la grille
+                :param : None
+        :return : None
         """
         for i in range(65, 75):
             for j in range(1, 11):
@@ -323,11 +322,11 @@ class BatailleNavaleClient:
             return True
         return False
 
-    def tir(self, case: str) -> str:
+    def tir(self, case: str) -> tuple:
         """
         Méthode qui renvoie le résultat du tir : à l'eau / touché / coulé
         :param case : str, case du tir
-        :return : str, le résultat du tir
+        :return : tuple, le résultat du tir et la longueur du bateau éventuellement touché
         """
         resultat, len_bateau = 'eau', 0  # valeurs par défaut
         for bateau in range(len(self.joueur_client.bateaux)):
@@ -380,9 +379,7 @@ class BatailleNavaleClient:
         :param case_dep : str, début de la position du bateau à poser
         :param case_fin : str, fin de la position du bateau à poser
         """
-        cases_a_poser = []
-        cases_bateaux = []
-
+        cases_a_poser, cases_bateaux = [], []
         valide = True
 
         for cle, valeur in self.joueur_client.jeu.items():
