@@ -423,45 +423,19 @@ class BatailleNavaleClient:
                 label['text'] = 'Que la bataille commence !'
 
 def afficher_regles():
-    regles_images = PhotoImage(file='images/regles.gif')
-    zone_dessin.create_image(550, 300, image=regles_images)
-    Button(tk, text='Retour', command=menu).pack()
+    global bouton_retour
+    zone_dessin.itemconfig(fond, image=regles_image)
+    bouton_jouer.destroy()
+    bouton_quitter.destroy()
+    bouton_regles.destroy()
+    bouton_retour = Button(tk, text='Retour', command=menu)
+    bouton_retour.pack()
 
 def debut_jeu():
-    global commencer
-    commencer = True
-
-def menu():
-    menu_image = PhotoImage(file="images/menu.gif")
-    zone_dessin.create_image(550, 300, image=menu_image)
-    Button(tk, text='Jouer', command=debut_jeu).pack()
-    Button(tk, text='Règles', command=afficher_regles).pack()
-    Button (tk, text='Quitter', command=tk.destroy).pack()
-
-# =======================================================================================================
-# PROGRAMME PRINCIPAL
-# =======================================================================================================
-
-commencer = False
-
-# GUI
-tk = Tk()
-tk.title("Bataille Navale")
-zone_dessin = Canvas(width="1100", height="600", bg="white")
-zone_dessin.pack()
-
-# Centrer la fenêtre
-nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
-tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
-
-menu_image = PhotoImage(file="images/menu.gif")
-zone_dessin.create_image(550, 300, image=menu_image)
-Button(tk, text='Jouer', command=debut_jeu).pack()
-Button(tk, text='Règles', command=afficher_regles).pack()
-Button (tk, text='Quitter', command=tk.destroy).pack()
-
-if commencer :
-    print(1)
+    
+    bouton_jouer.destroy()
+    bouton_quitter.destroy()
+    bouton_regles.destroy()
     var_pop_up = Toplevel()  # création de la fenêtre pop up
 
     # centre la fenêtre
@@ -481,11 +455,7 @@ if commencer :
     tk.wait_window(var_pop_up)
     bataille_navale_client = BatailleNavaleClient(pseudo.get())
 
-
-
-
-    board_image = PhotoImage(file="images/jeu.gif")
-    fond_board = zone_dessin.create_image(550, 300, image=board_image)
+    zone_dessin.itemconfig(fond, image=board_image)
     zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
 
     # Message
@@ -497,5 +467,42 @@ if commencer :
     # Jeu
     bataille_navale_client.coordonnees_cases()
     bataille_navale_client.init_cases_adjacentes()
+
+def menu():
+    global bouton_retour
+    bouton_retour.destroy()
+    zone_dessin.itemconfig(fond, image=menu_image)
+    bouton_jouer = Button(tk, text='Jouer', command=debut_jeu)
+    bouton_jouer.pack()
+    bouton_regles = Button(tk, text='Règles', command=afficher_regles)
+    bouton_regles.pack()
+    bouton_quitter = Button (tk, text='Quitter', command=tk.destroy)
+    bouton_quitter.pack()
+
+# =======================================================================================================
+# PROGRAMME PRINCIPAL
+# =======================================================================================================
+
+# GUI
+tk = Tk()
+tk.title("Bataille Navale")
+zone_dessin = Canvas(width="1100", height="600", bg="white")
+zone_dessin.pack()
+
+# Centrer la fenêtre
+nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
+tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
+
+menu_image = PhotoImage(file="images/menu.gif")
+fond = zone_dessin.create_image(550, 300, image=menu_image)
+bouton_jouer = Button(tk, text='Jouer', command=debut_jeu)
+bouton_jouer.pack()
+bouton_regles = Button(tk, text='Règles', command=afficher_regles)
+bouton_regles.pack()
+bouton_quitter = Button (tk, text='Quitter', command=tk.destroy)
+bouton_quitter.pack()
+
+regles_image = PhotoImage(file="images/regles.gif")
+board_image = PhotoImage(file="images/jeu.gif")
 
 tk.mainloop()
