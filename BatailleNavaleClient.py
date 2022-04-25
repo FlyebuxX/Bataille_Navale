@@ -432,7 +432,7 @@ def afficher_regles():
     bouton_retour.pack()
 
 def debut_jeu():
-    
+    global label
     bouton_jouer.destroy()
     bouton_quitter.destroy()
     bouton_regles.destroy()
@@ -496,11 +496,11 @@ tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
 menu_image = PhotoImage(file="images/menu.gif")
 fond = zone_dessin.create_image(550, 300, image=menu_image)
 bouton_jouer = Button(tk, text='Jouer', command=debut_jeu)
-bouton_jouer.pack()
+bouton_jouer.place(x=100, y=500)
 bouton_regles = Button(tk, text='Règles', command=afficher_regles)
-bouton_regles.pack()
+bouton_regles.place(x=150, y=500)
 bouton_quitter = Button (tk, text='Quitter', command=tk.destroy)
-bouton_quitter.pack()
+bouton_quitter.place(x=200, y=500)
 
 regles_image = PhotoImage(file="images/regles.gif")
 board_image = PhotoImage(file="images/jeu.gif")
