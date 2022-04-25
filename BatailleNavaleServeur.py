@@ -99,7 +99,7 @@ class BatailleNavaleServeur:
 
         if self.joueur_serveur.bateaux_restants == 0:
             self.phase = 'fin'
-            self.pop_up("Bravo", str(self.ennemi_client.pseudo) + ' a gagné !')
+            self.pop_up("Perdu", str(self.ennemi_client.pseudo) + ' a gagné')
             label['text'] = str(self.ennemi_client.pseudo) + " a gagné"
         else:
             self.phase = 'tour_joueur'
@@ -301,7 +301,7 @@ class BatailleNavaleServeur:
                         self.ennemi_client.bateaux_restants -= 1
 
                     if self.ennemi_client.bateaux_restants == 0:
-                        self.pop_up('Bravo !', str(self.joueur_serveur.pseudo) + ' a gagné')
+                        self.pop_up('Bravo', str(self.joueur_serveur.pseudo) + ' a gagné !')
                         self.phase = 'fin'
                         label['text'] = str(self.joueur_serveur.pseudo) + " a gagné"
                     else:
