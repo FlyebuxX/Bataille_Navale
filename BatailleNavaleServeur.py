@@ -472,6 +472,13 @@ def debut_jeu():
     zone_dessin.itemconfig(fond, image=board_image_sombre)
     zone_dessin.bind('<Button-1>', bataille_navale_serveur.detection_clic)
 
+    pseudo_joueur = bataille_navale_serveur.joueur_serveur.pseudo
+    font = tkinter.font.Font(family='Helvetica', size=14)
+    Label(tk, text=pseudo_joueur, bg='#d1d0cb', fg='#142396', font=font).place(x=92, y=90)
+    pseudo_ennemi = bataille_navale_serveur.ennemi_client.pseudo
+    font = tkinter.font.Font(family='Helvetica', size=14)
+    Label(tk, text=pseudo_ennemi, bg='#d1d0cb', fg='#142396', font=font).place(x=722, y=90)
+
     Button(tk, text='Mode sombre/clair', command=bataille_navale_serveur.changer_mode).place(x=940, y=550)
 
     # Message
