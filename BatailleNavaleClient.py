@@ -428,14 +428,13 @@ def afficher_regles():
     bouton_jouer.destroy()
     bouton_quitter.destroy()
     bouton_regles.destroy()
-    bouton_retour = Button(tk, text='Retour', command=menu)
-    bouton_retour.pack()
+    
+    bouton_retour = Button(tk, image=image_bouton_retour, command=menu)
+    bouton_retour.place(x=890, y=520)
 
 def debut_jeu():
     global label
-    bouton_jouer.destroy()
-    bouton_quitter.destroy()
-    bouton_regles.destroy()
+    
     var_pop_up = Toplevel()  # création de la fenêtre pop up
 
     # centre la fenêtre
@@ -455,6 +454,10 @@ def debut_jeu():
     tk.wait_window(var_pop_up)
     bataille_navale_client = BatailleNavaleClient(pseudo.get())
 
+    bouton_jouer.destroy()
+    bouton_quitter.destroy()
+    bouton_regles.destroy()
+
     zone_dessin.itemconfig(fond, image=board_image)
     zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
 
@@ -469,16 +472,15 @@ def debut_jeu():
     bataille_navale_client.init_cases_adjacentes()
 
 def menu():
-    global bouton_retour
+    global bouton_retour, bouton_jouer, bouton_regles, bouton_quitter
     bouton_retour.destroy()
     zone_dessin.itemconfig(fond, image=menu_image)
-    bouton_jouer = Button(tk, text='Jouer', command=debut_jeu)
-    bouton_jouer.pack()
-    bouton_regles = Button(tk, text='Règles', command=afficher_regles)
-    bouton_regles.pack()
-    bouton_quitter = Button (tk, text='Quitter', command=tk.destroy)
-    bouton_quitter.pack()
-
+    bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
+    bouton_jouer.place(x=50, y=475)
+    bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
+    bouton_regles.place(x=300, y=475)
+    bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+    bouton_quitter.place(x=560, y=475)
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
@@ -495,14 +497,18 @@ tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
 
 menu_image = PhotoImage(file="images/menu.gif")
 fond = zone_dessin.create_image(550, 300, image=menu_image)
-bouton_jouer = Button(tk, text='Jouer', command=debut_jeu)
-bouton_jouer.place(x=100, y=500)
-bouton_regles = Button(tk, text='Règles', command=afficher_regles)
-bouton_regles.place(x=150, y=500)
-bouton_quitter = Button (tk, text='Quitter', command=tk.destroy)
-bouton_quitter.place(x=200, y=500)
+image_bouton_jouer = PhotoImage(file='images/jouer.gif')
+bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
+bouton_jouer.place(x=50, y=475)
+image_bouton_regles = PhotoImage(file='images/regles_bouton.gif')
+bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
+bouton_regles.place(x=300, y=475)
+image_bouton_quitter = PhotoImage(file='images/quitter.gif')
+bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+bouton_quitter.place(x=560, y=475)
 
 regles_image = PhotoImage(file="images/regles.gif")
 board_image = PhotoImage(file="images/jeu.gif")
+image_bouton_retour = PhotoImage(file='images/retour.gif')
 
 tk.mainloop()

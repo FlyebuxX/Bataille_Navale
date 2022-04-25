@@ -424,7 +424,65 @@ class BatailleNavaleServeur:
             else:
                 label['text'] = 'Que la bataille commence !'
 
+def afficher_regles():
+    global bouton_retour
+    zone_dessin.itemconfig(fond, image=regles_image)
+    bouton_jouer.destroy()
+    bouton_quitter.destroy()
+    bouton_regles.destroy()
+    
+    bouton_retour = Button(tk, image=image_bouton_retour, command=menu)
+    bouton_retour.place(x=890, y=520)
 
+def debut_jeu():
+    global label
+    
+    var_pop_up = Toplevel()  # création de la fenêtre pop up
+
+    # centre la fenêtre
+    y = int(tk.winfo_screenheight() / 2) - 35
+    x = int(tk.winfo_screenwidth() / 2) - 250
+    var_pop_up.geometry('500x70+' + str(x) + '+' + str(y))
+
+    var_pop_up.title('Bataille Navale')
+    Label(var_pop_up, text='Nom du joueur :').pack()
+    pseudo = StringVar(tk)
+    pseudo_entree = Entry(var_pop_up, textvariable=pseudo)
+    pseudo_entree.pack()
+    pseudo_entree.focus_force()
+    Button(var_pop_up, text="Ok", command=var_pop_up.destroy).pack()
+    var_pop_up.transient(tk)
+    var_pop_up.grab_set()
+    tk.wait_window(var_pop_up)
+    bataille_navale_serveur = BatailleNavaleServeur(pseudo.get())
+
+    bouton_jouer.destroy()
+    bouton_quitter.destroy()
+    bouton_regles.destroy()
+
+    zone_dessin.itemconfig(fond, image=board_image)
+    zone_dessin.bind('<Button-1>', bataille_navale_serveur.detection_clic)
+
+    # Message
+    mess = 'Poser un bateau de longueur ' + str(bataille_navale_serveur.longueurs_bateaux[0])
+    font = tkinter.font.Font(family='Helvetica', size=14)
+    label = Label(tk, text=mess, bg='#d1d0cb', height=2, padx=2, pady=2, fg='#142396', font=font)
+    label.pack(side=BOTTOM)
+
+    # Jeu
+    bataille_navale_serveur.coordonnees_cases()
+    bataille_navale_serveur.init_cases_adjacentes()
+
+def menu():
+    global bouton_retour, bouton_jouer, bouton_regles, bouton_quitter
+    bouton_retour.destroy()
+    zone_dessin.itemconfig(fond, image=menu_image)
+    bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
+    bouton_jouer.place(x=50, y=475)
+    bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
+    bouton_regles.place(x=300, y=475)
+    bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+    bouton_quitter.place(x=560, y=475)
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
@@ -435,40 +493,25 @@ tk.title("Bataille Navale")
 zone_dessin = Canvas(width="1100", height="600", bg="white")
 zone_dessin.pack()
 
-var_pop_up = Toplevel()  # création de la fenêtre pop up
-
-# centre la fenêtre
-y = int(tk.winfo_screenheight() / 2) - 35
-x = int(tk.winfo_screenwidth() / 2) - 250
-var_pop_up.geometry('500x70+' + str(x) + '+' + str(y))
-
-var_pop_up.title('Bataille Navale')
-Label(var_pop_up, text='Nom du joueur :').pack()
-pseudo = StringVar(tk)
-pseudo_entree = Entry(var_pop_up, textvariable=pseudo)
-pseudo_entree.pack()
-pseudo_entree.focus_force()
-Button(var_pop_up, text="Ok", command=var_pop_up.destroy).pack()
-var_pop_up.transient(tk)
-var_pop_up.grab_set()
-tk.wait_window(var_pop_up)
-bataille_navale_client = BatailleNavaleServeur(pseudo.get())
-
 # Centrer la fenêtre
 nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
 tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
+
+menu_image = PhotoImage(file="images/menu.gif")
+fond = zone_dessin.create_image(550, 300, image=menu_image)
+image_bouton_jouer = PhotoImage(file='images/jouer.gif')
+bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
+bouton_jouer.place(x=50, y=475)
+image_bouton_regles = PhotoImage(file='images/regles_bouton.gif')
+bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
+bouton_regles.place(x=300, y=475)
+image_bouton_quitter = PhotoImage(file='images/quitter.gif')
+bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+bouton_quitter.place(x=560, y=475)
+
+regles_image = PhotoImage(file="images/regles.gif")
 board_image = PhotoImage(file="images/jeu.gif")
-fond_board = zone_dessin.create_image(550, 300, image=board_image)
-zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
-
-# Message
-mess = 'Poser un bateau de longueur ' + str(bataille_navale_client.longueurs_bateaux[0])
-font = tkinter.font.Font(family='Helvetica', size=14)
-label = Label(tk, text=mess, bg='#d1d0cb', height=2, padx=2, pady=2, fg='#142396', font=font)
-label.pack(side=BOTTOM)
-
-# Jeu
-bataille_navale_client.coordonnees_cases()
-bataille_navale_client.init_cases_adjacentes()
+image_bouton_retour = PhotoImage(file='images/retour.gif')
 
 tk.mainloop()
+
