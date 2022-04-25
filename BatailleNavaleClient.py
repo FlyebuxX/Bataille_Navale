@@ -58,6 +58,7 @@ class BatailleNavaleClient:
         self.deux_derniers_clics = []
         self.longueurs_bateaux = [5, 4, 3, 3, 2]
         self.bateaux_touches = []
+        self.mode = 'sombre'
 
         # ============================================================================ #
         # COMMUNICATION AVEC LE CLIENT ENNEMI                                          #
@@ -130,6 +131,14 @@ class BatailleNavaleClient:
         var_pop_up.grab_set()
         tk.wait_window(var_pop_up)
 
+    def changer_mode(self):
+        if self.mode =='clair':
+            self.mode = 'sombre'
+            zone_dessin.itemconfig(fond, image=board_image_sombre)
+        else:
+            self.mode = 'clair'
+            zone_dessin.itemconfig(fond, image=board_image_clair)
+
     def poser_image(self, x: int, y: int, type_tir: str) -> int:
         """
         Méthode qui crée une nouvelle image sur la zone de dessin
@@ -145,7 +154,7 @@ class BatailleNavaleClient:
             'touche': 'images/touche.gif',
             'coule': 'images/coule.gif',
             'eau': 'images/eau.gif',
-            'ancre': 'images/ancre.gif'
+            'ancre': 'images/ancre_2.gif'
         }
         img = PhotoImage(file=types[type_tir])
         case = self.chercher_case(x, y)
@@ -458,8 +467,10 @@ def debut_jeu():
     bouton_quitter.destroy()
     bouton_regles.destroy()
 
-    zone_dessin.itemconfig(fond, image=board_image)
+    zone_dessin.itemconfig(fond, image=board_image_sombre)
     zone_dessin.bind('<Button-1>', bataille_navale_client.detection_clic)
+
+    Button(tk, text='Mode sombre/clair', command=bataille_navale_client.changer_mode).place(x=940, y=550)
 
     # Message
     mess = 'Poser un bateau de longueur ' + str(bataille_navale_client.longueurs_bateaux[0])
@@ -481,6 +492,7 @@ def menu():
     bouton_regles.place(x=300, y=475)
     bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
     bouton_quitter.place(x=560, y=475)
+
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
@@ -508,7 +520,8 @@ bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, pad
 bouton_quitter.place(x=560, y=475)
 
 regles_image = PhotoImage(file="images/regles.gif")
-board_image = PhotoImage(file="images/jeu.gif")
+board_image_clair = PhotoImage(file="images/jeu.gif")
+board_image_sombre = PhotoImage(file="images/jeu_2.gif")
 image_bouton_retour = PhotoImage(file='images/retour.gif')
 
 tk.mainloop()
