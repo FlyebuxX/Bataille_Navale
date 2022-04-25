@@ -427,6 +427,7 @@ class BatailleNavaleClient:
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
 
+
 # GUI
 tk = Tk()
 tk.title("Bataille Navale")
@@ -451,6 +452,8 @@ var_pop_up.transient(tk)
 var_pop_up.grab_set()
 tk.wait_window(var_pop_up)
 bataille_navale_client = BatailleNavaleClient(pseudo.get())
+
+
 
 # Centrer la fenêtre
 nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
