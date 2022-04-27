@@ -1,50 +1,16 @@
 # =======================================================================================================
 # IMPORTATIONS
-# ========================================================================================================
+# =======================================================================================================
 
 
-from serveur import Serveur
+from JoueurServeur import JoueurServeur
 from math import sqrt
 from tkinter import *
+from pygame import mixer
 import tkinter.font
 # =======================================================================================================
 # CLASS
 # =======================================================================================================
-
-
-class Joueur:
-    """
-    Joueur de la bataille navale
-    """
-
-    def __init__(self, pseudo: str):
-        self.pseudo = pseudo
-        self.jeu = {}
-        self.bateaux = []
-        self.bateaux_coules = [[], [], [], [], []]
-        self.bateaux_restants = 5
-        self.cases_interdites = []
-        self.cases_jouees = []
-        self.connexion_serveur = Serveur('Serveur', '26.255.135.38', 5000, 2)
-
-        self.initialiser_plateau()
-
-    def initialiser_plateau(self) -> None:
-        """
-        Méthode qui crée un plateau de jeu
-        :return : None
-        """
-        jeu_joueur = [[i if i > 0 else '' for i in range(11)]] + [[chr(i)] + ['_'] * 9 for i in range(65, 75)]
-        self.jeu = jeu_joueur
-
-    def connexion(self):
-        """
-        Connexion du serveur avec le client
-        :return : None
-        """
-        self.connexion_serveur.configuration_serveur()  # paramétrage connexion
-        self.connexion_serveur.recevoir_connexions()  # écoute d'une connexion entrante
-        self.connexion_serveur.accepter_connexion()
 
 
 class BatailleNavaleServeur:
@@ -52,8 +18,8 @@ class BatailleNavaleServeur:
     Jeu de la Bataille Navale
     """
 
-    def __init__(self, joueur1: str):
-        self.joueur_serveur = Joueur(joueur1)
+    def __init__(self, pseudo_joueur_serveur: str):
+        self.joueur_serveur = JoueurServeur(pseudo_joueur_serveur)
         self.phase = "pose_bateau"  # 'pose_bateau' / 'tour_joueur' / 'tour_adverse' /'fin'
         self.cases_adjacentes = {}
         self.images = []
@@ -72,11 +38,13 @@ class BatailleNavaleServeur:
         self.joueur_serveur.connexion_serveur.envoyer_message(self.joueur_serveur.pseudo)
         # recevoir le pseudo du client ennemi
         pseudo_ennemi_client = self.joueur_serveur.connexion_serveur.recevoir_message()
-        self.ennemi_client = Joueur(pseudo_ennemi_client)
+        self.ennemi_client = JoueurServeur(pseudo_ennemi_client)
 
     def recevoir_clic(self):
         """
         Méthode qui permet de recevoir le clic du joueur adverse
+        :param : None
+        :return : None
         """
         # recevoir la case du joueur adverse
         case = self.joueur_serveur.connexion_serveur.recevoir_message()
@@ -103,10 +71,7 @@ class BatailleNavaleServeur:
             self.pop_up("Perdu", str(self.ennemi_client.pseudo) + ' a gagné')
             label['text'] = str(self.ennemi_client.pseudo) + " a gagné"
         else:
-            self.phase = 'tour_joueur'
-            label['text'] = 'A ton tour !'
-
-        
+            self.phase, label['text'] = 'tour_joueur', 'A ton tour !'
 
     # -------------------------------------------------------------------------------------------------- #
     # --- INTERACTION SCRIPT / CLIENT / SERVEUR : GUI                                                    #
@@ -134,7 +99,12 @@ class BatailleNavaleServeur:
         tk.wait_window(var_pop_up)
 
     def changer_mode(self):
-        if self.mode =='clair':
+        """
+        Méthode qui permet de changer le colormode
+        :param : None
+        :return : None
+        """
+        if self.mode == 'clair':
             self.mode = 'sombre'
             zone_dessin.itemconfig(fond, image=board_image_sombre)
         else:
@@ -158,12 +128,30 @@ class BatailleNavaleServeur:
             'eau': 'images/eau.gif',
             'ancre': 'images/ancre_2.gif'
         }
+
         img = PhotoImage(file=types[type_tir])
         case = self.chercher_case(x, y)
         num_img = zone_dessin.create_image(x, y, image=img)
         self.images.append([case, num_img, img])
 
         return num_img
+
+    def jouer_son(self, type_tir):
+        """
+        Méthode qui lance la lecture d'un son
+        :param type_tir : str
+        :return : None
+        """
+        if type_tir == 'eau':
+            mixer.music.load("sons/eau.wav")
+        if type_tir == 'touche':
+            mixer.music.load("sons/explosion.wav")
+        elif type_tir == 'bateau':
+            mixer.music.load("sons/bateau.wav")
+        elif type_tir == 'coule':
+            mixer.music.load("sons/coule.wav")
+
+        mixer.music.play()
 
     # -------------------------------------------------------------------------------------------------- #
     # --- MÉTHODES RELATIVES AUX CASES DES GRILLES                                                       #
@@ -251,6 +239,7 @@ class BatailleNavaleServeur:
         """
         Méthode qui détecte le clic du joueur et agit selon la phase du jeu
         :param event : événement
+        :return : None
         """
         jeu, case = {}, ''
         # prend la grille selon la phase du jeu
@@ -280,9 +269,11 @@ class BatailleNavaleServeur:
                                                           self.deux_derniers_clics[1][1])
                             self.verifier_position_bateau(case_dep, case_fin, self.longueurs_bateaux[0])
                             self.deux_derniers_clics = []
+
                         else:  # pose l'image de l'ancre pour savoir où on a cliqué la 1ère fois
                             event.x, event.y = jeu[case][0], jeu[case][1:]
                             self.poser_image(event.x, event.y, 'ancre')
+
                 if len(self.longueurs_bateaux) == 0:  # s'il n'y a plus de bateaux à mettre
                     self.phase = 'tour_joueur'
                     label['text'] = 'A ton tour !'  # le serveur joue en premier
@@ -296,27 +287,26 @@ class BatailleNavaleServeur:
 
                     nx, ny = jeu[case][0], jeu[case][1]
                     num_img = self.poser_image(nx, ny, resultat)
+                    self.jouer_son(resultat)
                     self.joueur_serveur.cases_jouees.append(case)
+
                     if resultat == 'touche':
                         self.joueur_serveur.bateaux_coules[nb_bateau].append(num_img)
-
-                    if resultat == 'coule':
+                    elif resultat == 'coule':
                         for elt in self.images:
                             if elt[1] in self.joueur_serveur.bateaux_coules[nb_bateau]:
                                 img_coule = PhotoImage(file='images/coule.gif')
                                 zone_dessin.itemconfig(elt[1], image=img_coule)
                                 elt[1] = img_coule
-
+                        self.jouer_son('coule')
                         self.ennemi_client.bateaux_restants -= 1
 
                     if self.ennemi_client.bateaux_restants == 0:
                         self.pop_up('Bravo', str(self.joueur_serveur.pseudo) + ' a gagné !')
-                        self.phase = 'fin'
-                        label['text'] = str(self.joueur_serveur.pseudo) + " a gagné"
+                        self.phase, label['text'] = 'fin', str(self.joueur_serveur.pseudo) + " a gagné"
                     else:
-                        self.phase = 'tour_adverse'
-                        label['text'] = "A l'adversaire !"
-                        zone_dessin.after(1000, self.recevoir_clic)
+                        self.phase, label['text'] = 'tour_adverse', "A l'adversaire !"
+                        zone_dessin.after(2000, self.recevoir_clic)
 
     def validation_clic(self, coords: tuple) -> bool:
         """
@@ -324,8 +314,8 @@ class BatailleNavaleServeur:
         :param coords : tuple, coordonnées du clic
         :return : bool
         """
-        x = coords[0]
-        y = coords[1]
+        x, y = coords[0], coords[1]
+
         if self.phase == "tour_joueur" and 723 <= x <= 1062 and 163 < y < 520:
             return True
         elif self.phase == "pose_bateau" and 93 <= x <= 431 and 163 <= y <= 518:
@@ -336,9 +326,11 @@ class BatailleNavaleServeur:
         """
         Méthode qui renvoie le résultat du tir : à l'eau / touché / coulé
         :param case : str, case du tir
-        :return : tuple, le résultat du tir et la longueur du bateau éventuellement touché
+        :return resultat : str, résultat du tir
+        :return longueur : int, longueur du bateau éventuellement touché
         """
         resultat, len_bateau = 'eau', 0  # valeurs par défaut
+
         for bateau in range(len(self.joueur_serveur.bateaux)):
             bat = self.joueur_serveur.bateaux[bateau]
             # si on touche un bateau
@@ -364,6 +356,7 @@ class BatailleNavaleServeur:
         :param case_dep : str, début de la position du bateau à poser
         :param case_fin : str, fin de la position du bateau à poser
         :param longueur_bateau : longueur du bateau attendue
+        :return : None
         """
         if case_dep[0] == case_fin[0]:  # même lettre, pose horizontale
             if int(case_fin[1:]) - int(case_dep[1:]) < 0:
@@ -388,6 +381,7 @@ class BatailleNavaleServeur:
         Poser les bateaux sur son plateau de jeu
         :param case_dep : str, début de la position du bateau à poser
         :param case_fin : str, fin de la position du bateau à poser
+        :return : None
         """
         cases_a_poser, cases_bateaux = [], []
         valide = True
@@ -406,7 +400,6 @@ class BatailleNavaleServeur:
                     cases_bateaux.append(lettre + str(num_case))
 
         # on vérifie que l'emplacement du bateau est valide
-
         for case in cases_bateaux:
             if case in self.joueur_serveur.cases_interdites and valide:
                 valide = False
@@ -414,44 +407,66 @@ class BatailleNavaleServeur:
 
         if valide:
             self.longueurs_bateaux.pop(0)
-            # on pose les images du bateau
+            # pose les images du bateau
             for case in cases_a_poser:
                 x, y = case[0], case[1:]
                 self.poser_image(x, y, 'bateau')
 
-            # on met à jour la liste des cases interdites
+            # mise à jour la liste des cases interdites
             for case in cases_bateaux:
                 for i in self.cases_adjacentes[case]:
                     self.joueur_serveur.cases_interdites.append(i)
 
-            # on met à jour la liste des bateaux
+            # mise à  jour la liste des bateaux
             self.joueur_serveur.bateaux.append([case for case in cases_bateaux])
 
             if len(self.longueurs_bateaux) > 0:
-                # on met à jour le message indiquant le nombre de bateaux à poser
+                # mise à jour le message indiquant le nombre de bateaux à poser
                 label['text'] = 'Poser un bateau de longueur ' + str(self.longueurs_bateaux[0])
             else:
                 label['text'] = 'Que la bataille commence !'
 
+        self.jouer_son('bateau')
+
+
+# =======================================================================================================
+# FONCTIONS
+# =======================================================================================================
+
+
 def afficher_regles():
+    """
+    Fonction qui permet l'affichage des règles du jeu
+    :param : None
+    :return : None
+    """
     global bouton_retour
     zone_dessin.itemconfig(fond, image=regles_image)
     bouton_jouer.destroy()
     bouton_quitter.destroy()
     bouton_regles.destroy()
-    
+
     bouton_retour = Button(tk, image=image_bouton_retour, command=menu)
     bouton_retour.place(x=890, y=520)
 
+
 def debut_jeu():
+    """
+    Fonction qui permet le lancement du jeu
+    :param : None
+    :return : None
+    """
     global label
-    
+
     var_pop_up = Toplevel()  # création de la fenêtre pop up
 
     # centre la fenêtre
     y = int(tk.winfo_screenheight() / 2) - 35
     x = int(tk.winfo_screenwidth() / 2) - 250
     var_pop_up.geometry('500x70+' + str(x) + '+' + str(y))
+
+    # mise en place des canaux son
+    mixer.init()
 
     var_pop_up.title('Bataille Navale')
     Label(var_pop_up, text='Nom du joueur :').pack()
@@ -472,18 +487,17 @@ def debut_jeu():
     zone_dessin.itemconfig(fond, image=board_image_sombre)
     zone_dessin.bind('<Button-1>', bataille_navale_serveur.detection_clic)
 
+    font = tkinter.font.Font(family='Helvetica', size=14)
     pseudo_joueur = bataille_navale_serveur.joueur_serveur.pseudo
-    font = tkinter.font.Font(family='Helvetica', size=14)
     Label(tk, text=pseudo_joueur, bg='#d1d0cb', fg='#142396', font=font).place(x=92, y=90)
+
     pseudo_ennemi = bataille_navale_serveur.ennemi_client.pseudo
-    font = tkinter.font.Font(family='Helvetica', size=14)
     Label(tk, text=pseudo_ennemi, bg='#d1d0cb', fg='#142396', font=font).place(x=722, y=90)
 
     Button(tk, text='Mode sombre/clair', command=bataille_navale_serveur.changer_mode).place(x=940, y=550)
 
     # Message
     mess = 'Poser un bateau de longueur ' + str(bataille_navale_serveur.longueurs_bateaux[0])
-    font = tkinter.font.Font(family='Helvetica', size=14)
     label = Label(tk, text=mess, bg='#d1d0cb', height=2, padx=2, pady=2, fg='#142396', font=font)
     label.pack(side=BOTTOM)
 
@@ -491,20 +505,29 @@ def debut_jeu():
     bataille_navale_serveur.coordonnees_cases()
     bataille_navale_serveur.init_cases_adjacentes()
 
+
 def menu():
+    """
+    Fonction définissant le menu du jeu
+    :param : None
+    :return : None
+    """
     global bouton_retour, bouton_jouer, bouton_regles, bouton_quitter
+
     bouton_retour.destroy()
     zone_dessin.itemconfig(fond, image=menu_image)
     bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
     bouton_jouer.place(x=50, y=475)
     bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
     bouton_regles.place(x=300, y=475)
-    bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+    bouton_quitter = Button(tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
     bouton_quitter.place(x=560, y=475)
+
 
 # =======================================================================================================
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
+
 
 # GUI
 tk = Tk()
@@ -516,6 +539,7 @@ zone_dessin.pack()
 nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
 tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
 
+# Images et widgets
 menu_image = PhotoImage(file="images/menu.gif")
 fond = zone_dessin.create_image(550, 300, image=menu_image)
 image_bouton_jouer = PhotoImage(file='images/jouer.gif')
@@ -525,7 +549,7 @@ image_bouton_regles = PhotoImage(file='images/regles_bouton.gif')
 bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
 bouton_regles.place(x=300, y=475)
 image_bouton_quitter = PhotoImage(file='images/quitter.gif')
-bouton_quitter = Button (tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+bouton_quitter = Button(tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
 bouton_quitter.place(x=560, y=475)
 
 regles_image = PhotoImage(file="images/regles.gif")
@@ -534,4 +558,3 @@ board_image_sombre = PhotoImage(file="images/jeu_2.gif")
 image_bouton_retour = PhotoImage(file='images/retour.gif')
 
 tk.mainloop()
-
