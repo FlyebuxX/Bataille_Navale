@@ -306,7 +306,7 @@ class BatailleNavaleServeur:
                         self.phase, label['text'] = 'fin', str(self.joueur_serveur.pseudo) + " a gagné"
                     else:
                         self.phase, label['text'] = 'tour_adverse', "A l'adversaire !"
-                        zone_dessin.after(2000, self.recevoir_clic)
+                        zone_dessin.after(100, self.recevoir_clic)
 
     def validation_clic(self, coords: tuple) -> bool:
         """
