@@ -68,6 +68,8 @@ class BatailleNavaleServeur:
 
         if self.joueur_serveur.bateaux_restants == 0:
             self.phase = 'fin'
+            mixer.music.load("sons/pirate.mp3")
+            mixer.music.play()
             self.pop_up("Perdu", str(self.ennemi_client.pseudo) + ' a gagné')
             label['text'] = str(self.ennemi_client.pseudo) + " a gagné"
         else:
@@ -279,6 +281,7 @@ class BatailleNavaleServeur:
                     label['text'] = 'A ton tour !'  # le serveur joue en premier
 
             elif self.phase == 'tour_joueur':
+                mixer.pause()
                 case = self.chercher_case(event.x, event.y)
                 if case not in self.joueur_serveur.cases_jouees:
                     self.joueur_serveur.connexion_serveur.envoyer_message(case)
@@ -302,6 +305,8 @@ class BatailleNavaleServeur:
                         self.ennemi_client.bateaux_restants -= 1
 
                     if self.ennemi_client.bateaux_restants == 0:
+                        mixer.music.load("sons/pirate.mp3")
+                        mixer.music.play()
                         self.pop_up('Bravo', str(self.joueur_serveur.pseudo) + ' a gagné !')
                         self.phase, label['text'] = 'fin', str(self.joueur_serveur.pseudo) + " a gagné"
                     else:
@@ -466,7 +471,6 @@ def debut_jeu():
     var_pop_up.geometry('500x70+' + str(x) + '+' + str(y))
 
     # mise en place des canaux son
-    mixer.init()
 
     var_pop_up.title('Bataille Navale')
     Label(var_pop_up, text='Nom du joueur :').pack()
@@ -528,6 +532,10 @@ def menu():
 # PROGRAMME PRINCIPAL
 # =======================================================================================================
 
+# paramétrage du son
+mixer.init()
+mixer.music.load('sons/pirate.mp3')
+mixer.music.play(-1)
 
 # GUI
 tk = Tk()
