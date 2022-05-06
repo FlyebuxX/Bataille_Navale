@@ -451,7 +451,7 @@ def afficher_regles():
     bouton_quitter.destroy()
     bouton_regles.destroy()
 
-    bouton_retour = Button(tk, image=image_bouton_retour, command=menu)
+    bouton_retour = Button(tk, image=image_bouton_retour, command=menu, cursor='pirate')
     bouton_retour.place(x=890, y=520)
 
 
@@ -520,11 +520,11 @@ def menu():
 
     bouton_retour.destroy()
     zone_dessin.itemconfig(fond, image=menu_image)
-    bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
+    bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66, cursor='pirate')
     bouton_jouer.place(x=50, y=475)
-    bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
+    bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67, cursor='pirate')
     bouton_regles.place(x=300, y=475)
-    bouton_quitter = Button(tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+    bouton_quitter = Button(tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67, cursor='pirate')
     bouton_quitter.place(x=560, y=475)
 
 
@@ -551,13 +551,13 @@ tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
 menu_image = PhotoImage(file="images/menu.gif")
 fond = zone_dessin.create_image(550, 300, image=menu_image)
 image_bouton_jouer = PhotoImage(file='images/jouer.gif')
-bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66)
+bouton_jouer = Button(tk, image=image_bouton_jouer, command=debut_jeu, padx=204, pady=66, cursor='pirate')
 bouton_jouer.place(x=50, y=475)
 image_bouton_regles = PhotoImage(file='images/regles_bouton.gif')
-bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67)
+bouton_regles = Button(tk, image=image_bouton_regles, command=afficher_regles, padx=216, pady=67, cursor='pirate')
 bouton_regles.place(x=300, y=475)
 image_bouton_quitter = PhotoImage(file='images/quitter.gif')
-bouton_quitter = Button(tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67)
+bouton_quitter = Button(tk, image=image_bouton_quitter, command=tk.destroy, padx=242, pady=67, cursor='pirate')
 bouton_quitter.place(x=560, y=475)
 
 regles_image = PhotoImage(file="images/regles.gif")
