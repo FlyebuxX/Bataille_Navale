@@ -284,6 +284,7 @@ class BatailleNavaleServeur:
                 mixer.pause()
                 case = self.chercher_case(event.x, event.y)
                 if case not in self.joueur_serveur.cases_jouees:
+                    self.phase = 'tour_adverse'
                     self.joueur_serveur.connexion_serveur.envoyer_message(case)
                     resultat = self.joueur_serveur.connexion_serveur.recevoir_message()
                     nb_bateau = int(self.joueur_serveur.connexion_serveur.recevoir_message())
@@ -310,7 +311,7 @@ class BatailleNavaleServeur:
                         self.pop_up('Bravo', str(self.joueur_serveur.pseudo) + ' a gagné !')
                         self.phase, label['text'] = 'fin', str(self.joueur_serveur.pseudo) + " a gagné"
                     else:
-                        self.phase, label['text'] = 'tour_adverse', "A l'adversaire !"
+                        label['text'] = "A l'adversaire !"
                         zone_dessin.after(100, self.recevoir_clic)
 
     def validation_clic(self, coords: tuple) -> bool:
