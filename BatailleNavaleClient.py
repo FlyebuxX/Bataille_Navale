@@ -566,3 +566,4 @@ board_image_sombre = PhotoImage(file="images/jeu_2.gif")
 image_bouton_retour = PhotoImage(file='images/retour.gif')
 
 tk.mainloop()
+mixer.music.stop()
