@@ -4,7 +4,7 @@ Jeu de la bataille navale en Tkinter et jeu réseau
 ## Prise en main
 
 
-# Les deux scripts à lancer sont les suivants :
+### Les deux scripts à lancer sont les suivants :
 * BatailleNavaleServeur.py
 * BatailleNavaleClient.py
 
