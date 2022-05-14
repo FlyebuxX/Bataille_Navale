@@ -1,36 +1,40 @@
-# =====================================================================================================================
-# IMPORTATIONS
-# =====================================================================================================================
+# =================================================================================================================== #
+# === IMPORTATIONS                                                                                                    #
+# =================================================================================================================== #
 
 
 import socket
-# =====================================================================================================================
-# CLASS
-# =====================================================================================================================
+# =================================================================================================================== #
+# === CLASS                                                                                                           #
+# =================================================================================================================== #
 
 
 class Client:
+
     """
     Classe relative au client
     """
 
-    def __init__(self, nom_machine, host, port):
+    def __init__(self, nom_machine: str, host: str, port: int):
         self.machine_name = nom_machine
         self.HOST = host
         self.PORT = port
         self.CONNEXION_AVEC_SERVEUR = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_info = None
 
-    def connecter_appareil(self):
+    def connecter_appareil(self) -> None:
         """
         Méthode qui permet de connecter le client au serveur
+        :param : None
+        :return : None
         """
         self.CONNEXION_AVEC_SERVEUR.connect((self.HOST, self.PORT))
 
     def encoder_message(self, message):
         """
         Méthode qui encode un massage
-        :return message encoded :
+        :param message : str, message à encoder
+        :return message.encode() : message encodé
         """
         return message.encode()
 
@@ -38,9 +42,8 @@ class Client:
         """
         Envoyer un message
         :param message : message
-        :return message_converti : str
+        :return message : str, message
         """
-
         message_a_envoyer = self.encoder_message(message)
         self.CONNEXION_AVEC_SERVEUR.send(message_a_envoyer)
 
@@ -49,6 +52,7 @@ class Client:
     def recevoir_message(self) -> str:
         """
         Récupérer un message
+        :param : None
         :return message_serveur_decode : str
         """
         message_serveur = self.CONNEXION_AVEC_SERVEUR.recv(1024)
@@ -61,6 +65,7 @@ class Client:
     def fin_connexion(self) -> None:
         """
         Finir la connexion
+        :param : None
         :return : None
         """
         self.CONNEXION_AVEC_SERVEUR.close()
@@ -68,6 +73,7 @@ class Client:
     def __repr__(self):
         """
         Afficher les informations relatives au client
+        :param : None
         :return : None
         """
         infos = ["Affichage de l'IP machine ", socket.gethostbyname_ex(socket.gethostname())]

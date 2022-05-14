@@ -40,7 +40,7 @@ class BatailleNavaleClient:
         # envoyer le pseudo
         self.joueur_client.connexion_client.envoyer_message(self.joueur_client.pseudo)
 
-    def recevoir_clic(self):
+    def recevoir_clic(self) -> None:
         """
         Méthode qui permet de recevoir le clic du joueur adverse
         :param : None
@@ -100,7 +100,7 @@ class BatailleNavaleClient:
         var_pop_up.grab_set()
         tk.wait_window(var_pop_up)
 
-    def changer_mode(self):
+    def changer_mode(self) -> None:
         """
         Méthode qui permet de changer le colormode
         :param : None
@@ -137,7 +137,7 @@ class BatailleNavaleClient:
 
         return num_img
 
-    def jouer_son(self, type_tir):
+    def jouer_son(self, type_tir) -> None:
         """
         Méthode qui lance la lecture d'un son
         :param type_tir : str
@@ -356,7 +356,7 @@ class BatailleNavaleClient:
     # --- POSE DES BATEAUX                                                                                            #
     # --------------------------------------------------------------------------------------------------------------- #
 
-    def verifier_position_bateau(self, case_dep, case_fin, longueur_bateau):
+    def verifier_position_bateau(self, case_dep, case_fin, longueur_bateau) -> None:
         """
         Méthode qui vérifie si la position des bateaux renseignée sont valides
         :param case_dep : str, début de la position du bateau à poser
@@ -440,7 +440,7 @@ class BatailleNavaleClient:
 # =================================================================================================================== #
 
 
-def afficher_regles():
+def afficher_regles() -> None:
     """
     Fonction qui permet l'affichage des règles du jeu
     :param : None
@@ -456,7 +456,7 @@ def afficher_regles():
     bouton_retour.place(x=890, y=520)
 
 
-def debut_jeu():
+def debut_jeu() -> None:
     """
     Fonction qui permet le lancement du jeu
     :param : None
@@ -510,7 +510,7 @@ def debut_jeu():
     bataille_navale_client.init_cases_adjacentes()
 
 
-def menu():
+def menu() -> None:
     """
     Fonction définissant le menu du jeu
     :param : None
