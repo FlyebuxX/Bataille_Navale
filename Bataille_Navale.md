@@ -14,6 +14,8 @@ Pour changer les adresses IP correspondant au client et au serveur, il faut se r
 
 Dans le constructeur de chacune des deux classes de ces scripts, remplacer (si elle est renseignée, sinon ajouter) la valeur de l'adresse IP en second paramètre de la classe Client, située au niveau de l'attribut self.connexion_client et self.connexion_serveur.
 
+Penser à activer votre son pour une meilleur expérience de jeu !
+
 Il ne reste plus qu'à lancer d'abord le script BatailleNavaleServeur.py, puis BatailleNavaleClient.py.
 
 Bon jeu !
