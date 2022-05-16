@@ -548,6 +548,8 @@ zone_dessin.pack()
 nouveau_x, nouveau_y = int(tk.winfo_screenwidth() / 2) - 550, int(tk.winfo_screenheight() / 2) - 350
 tk.geometry('1100x650+' + str(nouveau_x) + '+' + str(nouveau_y))
 
+tk.resizable(width=False, height=False)
+
 # Images et widgets
 menu_image = PhotoImage(file="images/menu.gif")
 fond = zone_dessin.create_image(550, 300, image=menu_image)
