@@ -46,6 +46,7 @@ class BatailleNavaleClient:
         :param : None
         :return : None
         """
+        self.phase = ''
         # recevoir la case du joueur adverse
         case = self.joueur_client.connexion_client.recevoir_message()
         resultat, nb_bateau = self.tir(case)
