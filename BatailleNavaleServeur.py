@@ -383,6 +383,10 @@ class BatailleNavaleServeur:
                 self.pop_up('Attention',
                             'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
 
+        else: # pose en diagonale
+            self.pop_up('Attention',
+                        'Emplacement invalide: vous devez poser un bateau de taille ' + str(longueur_bateau))
+
     def poser_bateau(self, case_dep: str, case_fin: str) -> None:
         """
         Poser les bateaux sur son plateau de jeu
